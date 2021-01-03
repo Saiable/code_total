@@ -4,6 +4,7 @@ from utils.tencent.sms import send_sms_single
 import random
 from django.conf import settings
 
+
 # Create your views here.
 
 def send_sms(request):
@@ -22,22 +23,30 @@ def send_sms(request):
     else:
         return HttpResponse(res['errmsg'])
 
+
 from django import forms
 from app01 import models
 
 
 class RegisterModelForm(forms.ModelForm):
     # 修改默认的手机号
-    mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$','手机号格式错误'),])
-    password = forms.CharField(label='密码',widget=forms.PasswordInput())
-    confirm_passwords = forms.CharField(label='重复密码',widget=forms.PasswordInput())
-    code = forms.CharField(label='验证码')
+    mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])
+    password = forms.CharField(label='密码', widget=forms.PasswordInput())
+    confirm_passwords = forms.CharField(label='重复密码', widget=forms.PasswordInput())
+    code = forms.CharField(label='验证码', widget=forms.TextInput())
 
     class Meta:
         model = models.UserInfo
-        fields = "__all__"
+        # fields = "__all__"
+        fields = ['username', 'email', 'password', 'confirm_passwords', 'mobile_phone', 'code']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
 
 
 def register(request):
     form = RegisterModelForm()
-    return render(request, 'register.html', {'form':form})
+    return render(request, 'register.html', {'form': form})
