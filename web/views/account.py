@@ -4,7 +4,7 @@
 '''
 from django.http import JsonResponse
 from django.shortcuts import render, HttpResponse
-from web.forms.account import RegisterModelForm, SendSmsForm, LoginSMSForm
+from web.forms.account import RegisterModelForm, SendSmsForm, LoginSMSForm, LoginForm
 from web import models
 
 
@@ -52,9 +52,26 @@ def login_sms(request):
         # 用户输入正确，登陆成功
         user_object = form.cleaned_data['mobile_phone']
         # 用户信息放入session
-        # print(user_object)
-        request.session['user_id'] = user_object.id
-        request.session['user_name'] = user_object.username
+        print(user_object)
+        # request.session['user_id'] = user_object.id
+        # request.session['user_name'] = user_object.username
 
         return JsonResponse({'status': True, 'data': "/index/"})
     return JsonResponse({'status': False, 'error': form.errors})
+
+
+def login(request):
+    '''用户名密码登陆'''
+    form = LoginForm()
+    return render(request, 'login.html',{'form':form})
+
+def image_code(request):
+    '''生成图片验证码'''
+    from utils.image_code import check_code
+    from io import BytesIO
+
+    image_object, code = check_code()
+    stream = BytesIO()
+    image_object.save(stream, 'png')
+
+    return HttpResponse(stream.getvalue())
