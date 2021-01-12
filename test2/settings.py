@@ -130,12 +130,13 @@ TENCENT_SMS_APP_ID = 666666
 # 腾讯云短信应用的 app_key
 TENCENT_SMS_APP_KEY = "6666666666666"
 
-# 腾讯云短信签名内容
+# 腾讯云短信签名内容,需要和后台申请的保持一致
 TENCENT_SMS_SIGN = "python之路"
 
 TENCENT_SMS_TEMPLATE = {
     'register': 832736,
-    'login': 832429
+    # 'login': 832429
+    'login': 840501
 }
 try:
     from .local_setting import *
