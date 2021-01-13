@@ -3,9 +3,11 @@
 用户账户相关的功能：注册、短信、登陆、注销
 '''
 from django.http import JsonResponse
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 from web.forms.account import RegisterModelForm, SendSmsForm, LoginSMSForm, LoginForm
 from web import models
+from utils.image_code import check_code
+from io import BytesIO
 
 
 def register(request):
@@ -62,15 +64,33 @@ def login_sms(request):
 
 def login(request):
     '''用户名密码登陆'''
-    form = LoginForm()
-    return render(request, 'login.html',{'form':form})
+    if request.method == 'GET':
+        form = LoginForm(request)
+        return render(request, 'login.html', {'form': form})
+    form = LoginForm(request, data=request.POST)
+    if form.is_valid():
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+
+        # user_object = models.UserInfo.objects.filter(username=username, password=password).first()
+
+        from django.db.models import Q
+        user_object = models.UserInfo.objects.filter(Q(email=username)|Q(mobile_phone=username)).filter(password=password).first()
+        if user_object:
+            # 用户名密码正确
+            return redirect('index')
+        form.add_error('username', '用户名密码错误')
+
+    return render(request, 'login.html', {'form': form})
+
 
 def image_code(request):
     '''生成图片验证码'''
-    from utils.image_code import check_code
-    from io import BytesIO
 
     image_object, code = check_code()
+    request.session['image_code'] = code
+    # 设置过期时间为60秒
+    request.session.set_expiry(60)
     stream = BytesIO()
     image_object.save(stream, 'png')
 
