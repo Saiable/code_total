@@ -42,23 +42,21 @@
 - [Python]()
 - [Java]()
 ### 后端框架
-[django]()
+- [Django]()
+- [练手_Django_轻量级bug管理平台]()
 
 ## 数据库
-[MongoDB]()
-
-[postgresql]()
-
-[redis基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)
+- [MongoDB]()
+- [postgresql]()
+- [redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)
 
 ## 计算机网络
-[网络协议]()
+- [网络协议]()
 
 ## linux
-[shell脚本]()
+- [shell脚本]()
 
 ## 大数据
 ### 标注工具
-[brat]()
-
-[labelme]()
+- [brat]()
+- [labelme]()
