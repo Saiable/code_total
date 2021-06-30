@@ -4,6 +4,8 @@
 
 [官网下载](https://jquery.com/download/)
 
+[3.5.1的API](https://jquery.cuishifeng.cn/index.html)
+
 #### 概览
 
 查看jQuery 使用版本，控制台输入：$.fn.jquery
