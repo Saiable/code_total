@@ -5,7 +5,7 @@
 - [Js高级]()
 - [Less]()
 - [Bootstrap](https://gitee.com/mindcons/code_total/blob/master/md_doc/Bootstrap.md)
-- [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)  [H5_02](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5_02.md)
+- [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)  |  [H5_02](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5_02.md)
 - [Jquery](https://gitee.com/mindcons/code_total/blob/master/md_doc/Jquery.md)
 - [Ajax]()
 - [Node.js]()
