@@ -1,6 +1,6 @@
 [TOC]
 
-[文本教程](https://www.runoob.com/jquery/jquery-tutorial.html)
+[文本教程来源](https://www.runoob.com/jquery/jquery-tutorial.html)
 
 [官网下载](https://jquery.com/download/)
 
@@ -258,6 +258,8 @@ $("#p1").css("color","red").slideUp(2000).slideDown(2000);
 
 ##### jQuery - 获取内容和属性
 
+##### jQuery - 设置内容和属性
+
 jQuery 中非常重要的部分，就是操作 DOM 的能力。
 
 jQuery 提供一系列与 DOM 相关的方法，这使访问和操作元素和属性变得很容易。
@@ -283,4 +285,182 @@ $("#btn3").click(function(){
     $("#test3").val("RUNOOB");
 });
 ```
+
+text()、html() 以及 val()，同样拥有回调函数。回调函数有两个参数：被选元素列表中当前元素的下标，以及原始（旧的）值。然后以函数新值返回您希望使用的字符串。
+
+下面的例子演示带有回调函数的 text() 和 html()：
+
+```javascript
+$("#btn1").click(function(){
+    $("#test1").text(function(i,origText){
+        return "旧文本: " + origText + " 新文本: Hello world! (index: " + i + ")"; 
+    });
+});
+ 
+$("#btn2").click(function(){
+    $("#test2").html(function(i,origText){
+        return "旧 html: " + origText + " 新 html: Hello <b>world!</b> (index: " + i + ")"; 
+    });
+});
+```
+
+jQuery attr() 方法也用于设置/改变属性值：
+
+```javascript
+$("button").click(function(){
+  $("#runoob").attr("href","http://www.runoob.com/jquery");
+});
+```
+
+下面的例子演示如何同时设置 href 和 title 属性：
+
+```javascript
+$("button").click(function(){
+    $("#runoob").attr({
+        "href" : "http://www.runoob.com/jquery",
+        "title" : "jQuery 教程"
+    });
+});
+```
+
+jQuery 方法 attr()，也提供回调函数。回调函数有两个参数：被选元素列表中当前元素的下标，以及原始（旧的）值。然后以函数新值返回您希望使用的字符串。
+
+##### jQuery - 添加元素
+
+我们将学习用于添加新内容的四个 jQuery 方法：
+
+- append() - 在被选元素的结尾插入内容
+- prepend() - 在被选元素的开头插入内容
+- after() - 在被选元素之后插入内容
+- before() - 在被选元素之前插入内容
+
+##### jQuery - 删除元素
+
+如需删除元素和内容，一般可使用以下两个 jQuery 方法：
+
+- remove() - 删除被选元素（及其子元素）
+- empty() - 从被选元素中删除子元素
+
+jQuery remove() 方法也可接受一个参数，允许您对被删元素进行过滤。
+
+该参数可以是任何 jQuery 选择器的语法。
+
+下面的例子删除 class="italic" 的所有 <p> 元素：
+
+```javascript
+$("p").remove(".italic");
+```
+
+##### jQuery - 获取并设置 CSS 类
+
+jQuery 拥有若干进行 CSS 操作的方法。我们将学习下面这些：
+
+- addClass() - 向被选元素添加一个或多个类
+- removeClass() - 从被选元素删除一个或多个类
+- toggleClass() - 对被选元素进行添加/删除类的切换操作
+- css() - 设置或返回样式属性
+
+设置多个 CSS 属性，请使用如下语法：
+
+```javascript
+$("p").css({"background-color":"yellow","font-size":"200%"});
+```
+
+##### jQuery 尺寸
+
+jQuery 提供多个处理尺寸的重要方法：
+
+- width()
+- height()
+- innerWidth()
+- innerHeight()
+- outerWidth()
+- outerHeight()
+
+![jQuery Dimensions](https://www.runoob.com/images/img_jquerydim.gif)
+
+唯一需要注意的地方，设置了 box-sizing 后，width() 获取的是 css 设置的 width 减去 padding 和 border 的值。
+
+```
+.test{width:100px;height:100px;padding:10px;border:10px;box-sizing:border-box;}
+```
+
+-  width() 获取为: 60
+-  innerWidth() 获取值为: 80
+-  outWidth() 获取值为: 100
+
+#### jQuery 遍历
+
+jQuery 遍历，意为"移动"，用于根据其相对于其他元素的关系来"查找"（或选取）HTML 元素。以某项选择开始，并沿着这个选择移动，直到抵达您期望的元素为止。
+
+下图展示了一个家族树。通过 jQuery 遍历，您能够从被选（当前的）元素开始，轻松地在家族树中向上移动（祖先），向下移动（子孙），水平移动（同胞）。这种移动被称为对 DOM 进行遍历。
+
+![jQuery Dimensions](https://www.runoob.com/images/img_travtree.png)
+
+jQuery 提供了多种遍历 DOM 的方法。
+
+遍历方法中最大的种类是树遍历（tree-traversal）。
+
+接下来会讲解如何在 DOM 树中向上、下以及同级移动。
+
+##### jQuery 遍历 - 祖先
+
+祖先是父、祖父或曾祖父等等。
+
+通过 jQuery，您能够向上遍历 DOM 树，以查找元素的祖先。
+
+这些 jQuery 方法很有用，它们用于向上遍历 DOM 树：
+
+- parent()
+- parents()
+- parentsUntil()
+
+parent() 方法返回被选元素的直接父元素。
+
+该方法只会向上一级对 DOM 树进行遍历。
+
+下面的例子返回每个` <span> `元素的直接父元素：
+
+```javascript
+$(document).ready(function(){
+  $("span").parent();
+});
+```
+
+您也可以使用可选参数来过滤对祖先元素的搜索。
+
+下面的例子返回所有` <span>` 元素的所有祖先，并且它是` <ul> `元素：
+
+```javascript
+$(document).ready(function(){
+  $("span").parents("ul");
+});
+```
+
+parentsUntil() 方法返回介于两个给定元素之间的所有祖先元素。
+
+下面的例子返回介于` <span> `与 `<div> `元素之间的所有祖先元素：
+
+```javascript
+$(document).ready(function(){
+  $("span").parentsUntil("div");
+});
+```
+
+##### jQuery 遍历 - 后代
+
+下面是两个用于向下遍历 DOM 树的 jQuery 方法：
+
+- children()
+- find()
+
+返回` <div> `的所有后代：
+
+```javascript
+$(document).ready(function(){
+  $("div").find("*");
+});
+```
+
+##### jQuery 遍历 - 同胞(siblings)
 
