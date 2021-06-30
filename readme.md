@@ -5,7 +5,7 @@
 - [Js高级]()
 - [Less]()
 - [Bootstrap](https://gitee.com/mindcons/code_total/blob/master/md_doc/Bootstrap.md)
-- [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)
+- [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)  [H5_02](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5_02.md)
 - [Jquery](https://gitee.com/mindcons/code_total/blob/master/md_doc/Jquery.md)
 - [Ajax]()
 - [Node.js]()
@@ -43,7 +43,7 @@
 - [Java]()
 ### 后端框架
 - [Django]()
-- [练手_Django_轻量级bug管理平台]()
+- [练手_Django_轻量级bug管理平台](https://gitee.com/mindcons/code_total/blob/master/md_doc/django_bug管理平台.md)
 
 ## 数据库
 - [MongoDB]()
