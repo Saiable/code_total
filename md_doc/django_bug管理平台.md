@@ -3,7 +3,7 @@
 
 [学习视频网址](https://www.bilibili.com/video/BV1uA411b77M?p=81)
 
-本篇文章的md下载地址：[点击查看](https://gitee.com/mindcons/saas_codereview/blob/master/Saas%E9%A1%B9%E7%9B%AE_%E8%BD%BB%E9%87%8F%E7%BA%A7bug%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0.md)
+
 
 ## 项目开发
 
