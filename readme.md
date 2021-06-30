@@ -4,9 +4,9 @@
 - [Js基础]()
 - [Js高级]()
 - [Less]()
-- [Bootstrap]()
+- [Bootstrap](https://gitee.com/mindcons/code_total/blob/master/md_doc/Bootstrap.md)
 - [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)
-- [Jquery]()
+- [Jquery](https://gitee.com/mindcons/code_total/blob/master/md_doc/Jquery.md)
 - [Ajax]()
 - [Node.js]()
 - [ES6~ES11]()
@@ -48,7 +48,7 @@
 ## 数据库
 - [MongoDB]()
 - [postgresql]()
-- [redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)
+- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/Redis.md)
 
 ## 计算机网络
 - [网络协议]()
