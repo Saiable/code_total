@@ -5,7 +5,7 @@
 - [Js高级]()
 - [Less](https://gitee.com/mindcons/code_total/blob/master/md_doc/less基础.md)
 - [Bootstrap](https://gitee.com/mindcons/code_total/blob/master/md_doc/Bootstrap.md)  |  [栅格系统源码](https://gitee.com/mindcons/code_total/tree/master/%E5%89%8D%E7%AB%AF/bootstrap/%E6%A0%85%E6%A0%BC%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81)
-- [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)  |  [H5_02](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5_02.md)
+- [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)  |  [Canvas](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5_02.md)
 - [Jquery](https://gitee.com/mindcons/code_total/blob/master/md_doc/Jquery.md)
 - [Ajax(jquery)](https://gitee.com/mindcons/code_total/blob/master/md_doc/ajax(jquery).md)  |  [Ajax(axios)]()
 - Node.js  |  [npm介绍](https://gitee.com/mindcons/code_total/blob/master/md_doc/Node.js_npm介绍.md)  |  [文件系统](https://gitee.com/mindcons/code_total/blob/master/md_doc/Node.js_文件系统.md)
