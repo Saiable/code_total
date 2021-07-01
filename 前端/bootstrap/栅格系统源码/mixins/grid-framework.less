@@ -1,0 +1,103 @@
+//列
+
+.make-grid-columns() {
+// Common styles for all sizes of grid columns, widths 1-12
+.col(@index) { // initial
+    @item: ~".col-xs-@{index}, .col-sm-@{index}, .col-md-@{index}, .col-lg-@{index}";
+    .col((@index + 1), @item);
+}
+.col(@index, @list) when (@index =< @grid-columns) { // general; "=<" isn't a typo
+    @item: ~".col-xs-@{index}, .col-sm-@{index}, .col-md-@{index}, .col-lg-@{index}";
+    .col((@index + 1), ~"@{list}, @{item}");
+}
+.col(@index, @list) when (@index > @grid-columns) { // terminal
+    @{list} {
+    position: relative;
+    // Prevent columns from collapsing when empty
+    min-height: 1px;
+    // Inner gutter via padding
+    padding-left:  ceil((@grid-gutter-width / 2));
+    padding-right: floor((@grid-gutter-width / 2));
+    }
+}
+.col(1); // kickstart it
+}
+
+.float-grid-columns(@class) {
+.col(@index) { // initial
+    @item: ~".col-@{class}-@{index}";
+    .col((@index + 1), @item);
+}
+.col(@index, @list) when (@index =< @grid-columns) { // general
+    @item: ~".col-@{class}-@{index}";
+    .col((@index + 1), ~"@{list}, @{item}");
+}
+.col(@index, @list) when (@index > @grid-columns) { // terminal
+    @{list} {
+    float: left;
+    }
+}
+.col(1); // kickstart it
+}
+
+//2
+.make-grid(@class) {
+.float-grid-columns(@class);/2.1
+.loop-grid-columns(@grid-columns, @class, width);//2.2
+.loop-grid-columns(@grid-columns, @class, pull);//2.3
+.loop-grid-columns(@grid-columns, @class, push);//2.3
+.loop-grid-columns(@grid-columns, @class, offset);//2.4
+}
+
+// 2.2
+.loop-grid-columns(@index, @class, @type) when (@index >= 0) {//12 xs width   12>=0（这里是大于等于）index:12 ----> 1
+.calc-grid-column(@index, @class, @type);
+// 下面同样是递归，但是是递减的
+.loop-grid-columns((@index - 1), @class, @type);
+}
+
+    //生成类名，指定宽度
+.calc-grid-column(@index, @class, @type) when (@type = width) and (@index > 0) {// 12 xs @type = width   12>0（这里是大于）
+.col-@{class}-@{index} {
+    width: percentage((@index / @grid-columns));
+    //每次调用的时候，都会生成一个.col的class类名
+    //.col-xs-12,.col-xs-12,...... ,.col-xs-1
+    //width:分别对应  12/12  11/12   ...... 1/12
+    //.col-xs-12{width:12/12}
+    //.col-xs-11{width:11/12}
+    //.col-xs-10{width:10/12}
+    // ...
+    //.col-xs-11{width:1/12}
+}
+}
+
+.calc-grid-column(@index, @class, @type) when (@type = push) and (@index > 0) {//12
+.col-@{class}-push-@{index} {
+    left: percentage((@index / @grid-columns));
+}
+}
+    //当index时0时，除了生成了和上面一样的，还有
+    //push
+    //.col-xs-push-0{left:auto}
+    //pull
+    //.col-xs-pull-0{right:auto}
+.calc-grid-column(@index, @class, @type) when (@type = push) and (@index = 0) {
+.col-@{class}-push-0 {
+    left: auto;
+}
+}
+.calc-grid-column(@index, @class, @type) when (@type = pull) and (@index > 0) {
+.col-@{class}-pull-@{index} {
+    right: percentage((@index / @grid-columns));
+}
+}
+.calc-grid-column(@index, @class, @type) when (@type = pull) and (@index = 0) {
+.col-@{class}-pull-0 {
+    right: auto;
+}
+}
+.calc-grid-column(@index, @class, @type) when (@type = offset) {
+.col-@{class}-offset-@{index} {
+    margin-left: percentage((@index / @grid-columns));
+}
+}
