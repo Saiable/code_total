@@ -1,19 +1,24 @@
 [TOC]
 
+
+有的nodejs版本不支持win7，在win7系统中执行npm -v时或者安装时，会有以下提示
+`This application is only supported on Windows 8.1, Windows Server 2012 R2, or higher.`
+下载v12.16.2及之前的版本即可，[下载链接](https://nodejs.org/dist/)
+
 # npm介绍
 
-## 模块[¶](#_1)
+## 模块
 
-## 包[¶](#_2)
+## 包
 
 包描述文件: package.json
 
-## NPM(Node Package Mannager)[¶](#npmnode-package-mannager)
+## NPM(Node Package Mannager)
 
 - CommonJS包规范是理论，NPM是其中的一个实践。
 - 对于Node而言，NPM帮助其完成了第三方模块的发布、安装和依赖等。借助NPM，Node与第三方模块之间形成了很好的一个生态系统。
 
-### NPM命令[¶](#npm)
+### NPM命令
 
 - npm -v：查看npm的版本
 
@@ -236,7 +241,7 @@ found 0 vulnerabilities
 
 - npm install 包名 -g：全局模式安装包（全局安装的包，一般都是一些工具）
 
-### 配置CNPM[¶](#cnpm)
+### 配置CNPM
 
 ```
 npm install -g cnpm --registry=https://registry.npm.taobao.org
@@ -253,7 +258,7 @@ added 50 packages from 37 contributors and audited 51 packages in 18.317s
 √ All packages installed (52 packages installed from npm registry, used 5s(network 5s), speed 143.42kB/s, json 49(122.94kB), tarball 547.69kB)
 ```
 
-### node搜索包的流程[¶](#node)
+### node搜索包的流程
 
 通过npm下载的包都放在node_modules文件夹中，我们通过npm下载的包，直接通过包名引入即可
 
