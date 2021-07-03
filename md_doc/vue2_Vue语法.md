@@ -2,7 +2,7 @@
 
 # 01.vue语法基础
 
-### Vue初体验[¶](#vue)
+### Vue初体验
 
 ```
 <!DOCTYPE html>
@@ -34,7 +34,7 @@
 </html>
 ```
 
-### vue列表的展示[¶](#vue_1)
+### vue列表的展示
 
 ```
 <!DOCTYPE html>
@@ -67,7 +67,7 @@
 </html>
 ```
 
-### 计数器[¶](#_1)
+### 计数器
 
 ```
 <!DOCTYPE html>
@@ -108,24 +108,24 @@
 </html>
 ```
 
-### mvvm[¶](#mvvm)
+### mvvm
 
-### options选项[¶](#options)
+### options选项
 
 - el:
 - data:
 - method:
 - 生命周期函数:
 
-### vue生命周期[¶](#vue_2)
+### vue生命周期
 
 ### vue的生命周期函数有哪些[¶](#vue_3)
 
-### 定义vue的template[¶](#vuetemplate)
+### 定义vue的template
 
-### mustache语法[¶](#mustache)
+### mustache语法
 
-### 其他指令使用[¶](#_2)
+### 其他指令使用
 
 v-html
 
@@ -134,6 +134,25 @@ v-text
 v-pre
 
 v-cloak
+
+```vue
+    <div id="app">
+        <p v-cloak>{{ msg }}</p>
+        <p v-text="msg"></p>
+        <p v-html="msg"></p>
+    </div>
+
+    <script type="text/javascript">
+        var vm = new Vue({
+            el : "#app",
+            data : {
+                msg : "<h1>这是一个h1元素内容</h1>"
+            }
+        });
+    </script>
+```
+
+
 
 ### v-bind的基本使用[¶](#v-bind)
 
