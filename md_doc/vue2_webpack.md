@@ -1,10 +1,8 @@
 [TOC]
 
-# 02.webpack基础
+## 前端代码复杂带来的问题
 
-#### 前端代码复杂带来的问题[¶](#_1)
-
-#### 前端模块化雏形和CommonJS[¶](#commonjs)
+## 前端模块化雏形和CommonJS
 
 ```
 var a = 10
@@ -23,7 +21,7 @@ console.log(a)
 sum1(1,3)
 ```
 
-#### ES6模块化的实现[¶](#es6)
+## ES6模块化的实现
 
 ```
 var a = 10
@@ -63,11 +61,11 @@ import * as aa from './aa.js'
 console.log(aa.num1)
 ```
 
-### webpack[¶](#webpack)
+## Webpack
 
-#### webpack的安装和介绍[¶](#webpack_1)
+### webpack的安装和介绍
 
-##### 和GRUNT和GULP的对比[¶](#gruntgulp)
+#### 和GRUNT和GULP的对比
 
 下载node.js 查看自己的node版本
 
@@ -89,7 +87,7 @@ npm install webpack@3.6.0 --save-dev
 当在package.json中定义了scripts时，其中包含了webpack命令，那么使用的是局部webpack
 ```
 
-#### webpack的基本使用流程[¶](#webpack_2)
+### webpack的基本使用流程[¶](#webpack_2)
 
 目录结构
 
@@ -124,7 +122,7 @@ bundle.js  2.77 kB       0  [emitted]  main
    [1] ./src/mathUtil.js 154 bytes {0} [built]
 ```
 
-#### webpack.config.js配置和package.json配置[¶](#webpackconfigjspackagejson)
+### webpack.config.js配置和package.json配置
 
 执行npm init
 
@@ -186,7 +184,7 @@ module.exports ={
 npm install webpack@3.6.0 --save-dev
 ```
 
-#### webpack中使用css文件[¶](#webpackcss)
+### webpack中使用css文件
 
 添加css依赖，只有依赖的文件，才会进行打包
 
@@ -225,7 +223,7 @@ module.exports ={
 
 在`main.js`引入css文件，最后在index.html中引入bundle.js
 
-#### webpack-less文件的处理[¶](#webpack-less)
+### webpack-less文件的处理
 
 在入口文件main.js中，添加less的依赖
 
@@ -276,7 +274,7 @@ module.exports ={
 }
 ```
 
-#### webpack-图片文件的处理[¶](#webpack-)
+### webpack-图片文件的处理
 
 安装url-loader
 
@@ -375,7 +373,7 @@ npm install file-loader@3.0.1 --save-dev
             }
 ```
 
-#### webpack-ES6转ES5的babel[¶](#webpack-es6es5babel)
+### webpack-ES6转ES5的babel
 
 如果希望ES6的语法转为ES5，那么就需要使用babel `npm install --save-dev babel-loader@7.1.5 babel-core@6.26.3 babel-preset-es2015@6.24.1`
 
@@ -395,7 +393,7 @@ npm install file-loader@3.0.1 --save-dev
 }
 ```
 
-#### webpack-使用vue的配置[¶](#webpack-vue)
+### webpack-使用vue的配置
 
 安装vue，注意不要加开发时依赖
 
@@ -431,7 +429,7 @@ new Vue({
 })
 ```
 
-#### 创建Vue时template和el的关系[¶](#vuetemplateel)
+### 创建Vue时template和el的关系
 
 实际开发中，index.html是不写的，而是写在vue实例中了
 
@@ -457,7 +455,7 @@ new Vue({
 })
 ```
 
-#### Vue的终极使用方案[¶](#vue)
+### Vue的终极使用方案
 
 vue/app.js
 
@@ -593,7 +591,11 @@ npm install vue-loader@13 vue-template-compiler@2.5.21 --save-dev
     }
 ```
 
-#### webpack-横幅Plugin的使用[¶](#webpack-plugin)
+
+
+### Plugin
+
+#### webpack-横幅Plugin的使用
 
 ```
 //版权声明，BannerPlugin是webpack自带的，直接导入即可，然后再moudle中添加字段
@@ -641,7 +643,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin")
     ]
 ```
 
-#### webpack-UglifyjsWebpackPlugin的使用[¶](#webpack-uglifyjswebpackplugin)
+#### webpack-UglifyjsWebpackPlugin的使用
 
 需求：
 
@@ -656,7 +658,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 查看打包后的bundle.js文件，是已经被压缩过了的
 
-#### webpack-dev-server搭建本地服务器[¶](#webpack-dev-server)
+#### webpack-dev-server搭建本地服务器
 
 webpack提供了一个可选的本地开发服务器，其基于node.js搭建，内部使用express框架，可以实现浏览器自动刷新
 
@@ -689,7 +691,7 @@ devServer: {
 
 我们可以再配置另外一个scripts： --open表示直接打开浏览器
 
-#### 配置文件的分离[¶](#_2)
+#### 配置文件的分离
 
 开发阶段，不建议使用丑化代码的功能，只有在发布的时候才需要
 
@@ -846,3 +848,5 @@ module.exports = webpackMerge(baseConfig,    {
 ```
 
 再测试下`npm run dev`
+
+## Vite

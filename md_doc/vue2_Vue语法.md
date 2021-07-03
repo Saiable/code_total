@@ -1,12 +1,10 @@
 [TOC]
 
-# 01.vue语法基础
-
 ## Vue.js课程介绍
 
-### Vue.js的认识和特点介绍
+## Vue.js的认识和特点介绍
 
-### Vue初体验
+## Vue初体验
 
 ```
 <!DOCTYPE html>
@@ -38,7 +36,7 @@
 </html>
 ```
 
-#### vue列表的展示
+### vue列表的展示
 
 ```
 <!DOCTYPE html>
@@ -71,7 +69,7 @@
 </html>
 ```
 
-#### 计数器
+### 计数器
 
 ```
 <!DOCTYPE html>
@@ -112,24 +110,24 @@
 </html>
 ```
 
-### Vue的mvvm
+## Vue的mvvm
 
-### Vue的options选项
+## Vue的options选项
 
 - el:
 - data:
 - method:
 - 生命周期函数:
 
-### Vue生命周期
+## Vue生命周期
 
-#### vue的生命周期函数有哪些
+### vue的生命周期函数有哪些
 
-### 定义vue的template
+## 定义vue的template
 
-### mustache语法
+## mustache语法
 
-### 其他指令使用
+## 其他指令使用
 
 v-html
 
@@ -157,8 +155,6 @@ v-cloak
 ```
 
 
-
-# 常用指令
 
 ## v-bind
 

@@ -1,8 +1,6 @@
 [TOC]
 
-# 03.vue-cli基础
-
-### vuecli-脚手架的介绍和安装[¶](#vuecli-)
+## vuecli-脚手架的介绍和安装
 
 安装Vue脚手架 `npm install -g @vue/cli@3.2.1`脚手架3的安装方式，可以在3的基础上搭2的模板
 
@@ -24,7 +22,7 @@ Vue-Cli2初始化项目
 vue init webpack my-project
 ```
 
-#### vuecli-CLI2初始化项目过程[¶](#vuecli-cli2)
+## vuecli-CLI2初始化项目过程
 
 ```
 vue init webpack vuecli2test
@@ -43,7 +41,7 @@ vue init webpack vuecli2test
  No,I will handle that myself//选择NPM
 ```
 
-#### vuecli-CLI2的目录结构解析[¶](#vuecli-cli2_1)
+## vuecli-CLI2的目录结构解析
 
 package.json
 
@@ -98,7 +96,7 @@ index.html
 模板文件
 ```
 
-#### 安装CLI错误和ESLint规范[¶](#clieslint)
+## 安装CLI错误和ESLint规范
 
 安装不成功
 
@@ -111,7 +109,7 @@ Eslint会对所有的代码进行规范检测
 
 build/index.js 中可以配置eslint是否开启
 
-#### runtime-compiler和runtime-only[¶](#runtime-compilerruntime-only)
+## runtime-compiler和runtime-only
 
 两者的区别，只在main.js文件 runtiem-compiler/main.js
 
@@ -208,7 +206,7 @@ console.log(App)
 之前安装的vue-tempalte-compiler
 ```
 
-#### VueCLI3创建项目和目录[¶](#vuecli3)
+## VueCLI3创建项目和目录结构
 
 npm run build的解析过程
 
@@ -256,8 +254,6 @@ npm run dev的解析过程
    NODE_ENV:"production"      配置相关选项         上面两个文件合并，其实就是我们单独用webpack打包
                                                                编译需要的文件
 ```
-
-#### VueCLI3创建项目和目录结构[¶](#vuecli3_1)
 
 修改配置:webpack.base.conf.js
 
@@ -361,7 +357,7 @@ postcss.config.js
 css相关转换
 ```
 
-#### vuecli配置文件的查看和修改[¶](#vuecli)
+## vuecli配置文件的查看和修改
 
 - `vue ui` UI可以查看配置
 - node_modules/@vue/cli-service/lib/Service.js

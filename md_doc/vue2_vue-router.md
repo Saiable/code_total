@@ -1,10 +1,8 @@
 [TOC]
 
-# 04.vue-router基础
+## 箭头函数的使用和this指向
 
-#### 箭头函数的使用和this指向[¶](#this)
-
-#### 什么是路由和其中映射[¶](#_1)
+## 什么是路由和其中映射关系
 
 路由，就是通过互联的网络把信息从源地址传输到目的地址的活动
 
@@ -16,11 +14,11 @@
 
 创建vue-cli2项目来演示 选择安装vue-router
 
-#### 前端渲染、后端渲染和前端路由、后端路由[¶](#_2)
+## 前端渲染、后端渲染和前端路由、后端路由
 
 后端渲染 - jsp:java server page
 
-##### 后端路由[¶](#_3)
+### 后端路由
 
 - 后端处理url和页面之间的映射关系
 
@@ -32,7 +30,7 @@
 
 后端路由的缺点 - 一种情况是整个页面的模板有后端人员来编写和维护的。 - 另一种情况是前端开发人员如果要开发页面，需要通过PHP和Java等语言来编写页面代码。 - 而且通常情况下HTML代码和数据以及对应的逻辑会混在一起，编写和维护都是非常糟糕的事情
 
-##### 前后端分离[¶](#_4)
+### 前后端分离
 
 后端只负责提供数据，不负责任何借阶段的内容
 
@@ -40,7 +38,7 @@
 
 - 浏览器中显示的网页中的大部分内容，都是由前端写的js代码在浏览器中执行，最终渲染出来的网页
 
-##### 前后端分离阶段：[¶](#_5)
+### 前后端分离阶段：
 
 - 随着Ajax的出现，有了前后端分离的开发模式
 - 后端只提供API来返回数据，前端通过Ajax获取数据，并且可以通过js将数据渲染到页面中
@@ -48,7 +46,7 @@
 - 并且当移动端出现后，后端不需要进行任何处理，依然使用之前的一套API即可
 - 目前很多的网站依然采用这种模式开发
 
-#### SPA页面[¶](#spa)
+### SPA页面
 
 将一套html+css+js资源从静态资源服务器中，请求下来
 
@@ -58,15 +56,17 @@
 
 前段路由的核心是什么呢？ - 改变URL，但是整体页面不进行刷新 - 如何实现呢
 
-#### url的hash和html5的history[¶](#urlhashhtml5history)
+## url的hash和html5的history
 
 URL的hash - URL的hash也就是锚点(#)，本质上是改变window.location的href属性 - 我们可以直接通过赋值location.hash来改变href，但是页面不刷新 - vue-router会监听location.hash
 
 HTML5的history模式：pushState - history.pushState({},'','home') 把这些url压入到栈结构中（入栈） - history.back() 移除掉栈顶(出栈) - history.replaceState() 不能再点击返回按钮了 - history.go() -1(相当于出栈 .back()) -2（出栈2个） 2（入栈2个）....
 
-#### vue-route安装和配置方式[¶](#vue-route)
+## Vue-router
 
-#### 路由映射配置和呈现出来[¶](#_6)
+### vue-router安装和配置方式
+
+### 路由映射配置和呈现出来
 
 目前前端流行的三大框架，都是有自己的路由实现 - Angular的ngRouter - React的ReactRouter - Vue的VueRouter
 
@@ -196,7 +196,7 @@ components/Home.vue
 </style>
 ```
 
-#### 路由的默认值和修改为history模式[¶](#history)
+### 路由的默认值和修改为history模式
 
 路由的默认值
 
@@ -218,7 +218,7 @@ const router = new VueRouter({
 })
 ```
 
-#### router-link的其他属性补充[¶](#router-link)
+### router-link的其他属性补充
 
 不使用router-link默认渲染出的a标签，tag属性
 
@@ -246,7 +246,7 @@ const router = new VueRouter({
 })
 ```
 
-#### 通过代码实现路由跳转[¶](#_7)
+### 通过代码实现路由跳转
 
 App.vue
 
@@ -275,7 +275,7 @@ App.vue
 </script>
 ```
 
-#### vue-router动态路由的使用[¶](#vue-router)
+### vue-router动态路由的使用
 
 在某些情况下，一个页面的path路径可能是不确定的，比如我们进入用户界面时，希望是如下的路径： - user/aaa或user/bbb - 除了有前面的/user之外，后面还跟上了用户的id - 这种path和components的匹配关系，我们称之为动态路由（也是路由传递的一种方式）
 
@@ -360,7 +360,7 @@ App.vue
 
 $router是整个大的路由活跃对象 $route是当前活跃的路由对象
 
-#### 打包文件的解析[¶](#_8)
+### vue-router-打包文件的解析
 
 /dist/static/js/app*.js - 当前应用开发的所有业务代码
 
@@ -368,7 +368,7 @@ $router是整个大的路由活跃对象 $route是当前活跃的路由对象
 
 /dist/static/js/manifest*.js - 为我们打包的代码做底层支撑的（**webpack_require**)
 
-#### vue-router懒加载[¶](#vue-router_1)
+### vue-router路由懒加载的使用
 
 - 当打包构建应用时，js包会变得非常大，影响页面加载。
 - 如果我们能把不同路由对应的组件分割成不同的代码块，然后当路由被访问的时候才加载对应组件，这样就更加高效了
@@ -406,7 +406,7 @@ const About = resolve => require(['../components/About.vue'], resolve)
 const Hoem = () => import('../components/Home.vue')
 ```
 
-#### 路由的嵌套使用[¶](#_9)
+### vue-router路由的嵌套使用
 
 嵌套路由是一个很常见的功能 - 比如在home页面中，我们希望通过/home/news和/home/message访问一些内容 - 一个路径映射一个组件，访问这两个路径也会分别渲染链各个组件
 
@@ -438,7 +438,7 @@ Home.vue
 </template>
 ```
 
-#### vue-router参数传递（一）[¶](#vue-router_2)
+### vue-router参数传递（一）
 
 传递参数主要有两种类型：params和query
 
@@ -464,7 +464,7 @@ Profile.vue
 </template>
 ```
 
-#### vue-router参数传递（二）[¶](#vue-router_3)
+### vue-router参数传递（二）
 
 不使用router-link
 
@@ -482,7 +482,7 @@ profileClick() {
 }
 ```
 
-#### vue-router中的router和route的由来[¶](#vue-routerrouterroute)
+### vue-router中的router和route的由来
 
 Vue.use(VueRouter) - 会执行插件VueRouter的install方法
 
@@ -515,7 +515,7 @@ route和router是有区别的
 
 使用熟练后，再去看看vue源码
 
-#### vue-router全局导航守卫[¶](#vue-router_4)
+### vue-router全局导航守卫
 
 需要对来回跳转的过程进行监听
 
@@ -575,7 +575,7 @@ index.js
 }
 ```
 
-#### 导航守卫的补充[¶](#_10)
+### vue-router导航守卫的补充
 
 补充一：如果是后置钩子，也就是afterEach，不需要主动调用next()函数
 
@@ -591,7 +591,7 @@ router.afterEach((to, from) => {
 
 可以通过官方网站来学习，需要使用的时候看官网的api
 
-#### vue-router keep-alive及其他问题[¶](#vue-router-keep-alive)
+### vue-router keep-alive及其他问题
 
 router-view也是一个组件，如果直接被包在keep-alive里面，所有路径匹配到的视图组件都会被缓存
 
@@ -641,7 +641,7 @@ beforeRouteLeave(to, from, next) {
 }
 ```
 
-#### vue-router keep-alive属性介绍[¶](#vue-router-keep-alive_1)
+### vue-router keep-alive属性介绍
 
 需求：有一个单独的组件，需要频繁的创建和销毁
 
