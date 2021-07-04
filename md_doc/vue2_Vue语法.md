@@ -4,6 +4,12 @@
 
 ## Vue.js的认识和特点介绍
 
+## Vue.js的安装方式
+
+- 直接cdn引入
+- 下载和引入
+- npm安装
+
 ## Vue初体验
 
 ```
@@ -111,6 +117,16 @@
 ```
 
 ## Vue的mvvm
+
+- 计数器的mvvm
+  - 我们的计数器中，就有严格的mvvm思想
+    - View依然使我们的dom
+    - Model就是我们抽离出来的obj
+    - ViewModel就是我们创建的Vue对象实例
+  - 它们之间如何工作呢？
+    - 首先ViewModel通过DataBinding让obj中的数据实时在Dom中显示
+    - 其次ViewModel通过Dom Listener来监听DOM事件，并且通过methods中的操作，来改变obj中的 数据
+- 有了Vue帮助我们完成VueModel层的任务，在后续的研发，我们就可以专注于数据的处理，以及DOM的编写工作了
 
 ## Vue的options选项
 

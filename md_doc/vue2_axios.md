@@ -1,9 +1,9 @@
 [TOC]
-# 07.axios基础
+## Axios
 
-#### 网络请求模块的选择-axios[¶](#-axios)
+### 网络请求模块的选择-axios
 
-在前段开发中，我们一种常见的网络请求方式就是JSONP
+在前端开发中，我们一种常见的网络请求方式就是JSONP
 
 - 使用JSONP最主要的原因，往往是为了解决跨域访问的问题
 
@@ -14,7 +14,7 @@ JSONP的原理是什么呢？
 - 这个时候，我们利用`<script>`标签的src帮助我们去服务器请求到数据，将数据当做一个javascript函数来执行，并且执行的过程中传入我们需要的json
 - 所以，封装jsonp的核心就在于我们监听window上的jsonp进行回调的名称
 
-##### 为什么选择AXIOS？[¶](#axios)
+#### 为什么选择AXIOS？
 
 - 在浏览器中发送XMLHttpRequest请求
 - 在node.js中发送http请求
@@ -23,7 +23,7 @@ JSONP的原理是什么呢？
 - 转换请求和相应数据
 - 等等
 
-#### axios框架的基本使用[¶](#axios_1)
+### axios框架的基本使用
 
 - 支持多种请求方式
 - axios(config)
@@ -57,7 +57,7 @@ axios({
 })
 ```
 
-#### axios发送并发请求[¶](#axios_2)
+### axios发送并发请求
 
 ```
 axios.all([axios(), axios()]).then(results => {
@@ -87,7 +87,7 @@ axios.all([axios({
 }))
 ```
 
-#### axios的配置信息相关[¶](#axios_3)
+### axios的配置信息相关
 
 在上面的示例中，我们的BaseUrl是固定的
 
@@ -116,7 +116,7 @@ axios.defaults.headers.post['Content-Type']='application/x-www-form-urlencoded'
 - 身份验证信息
 - 响应式的数据格式json/blob/document/arrarybuffer/text/stream
 
-#### axios的实例和模块封装[¶](#axios_4)
+### axios的实例和模块封装
 
 ```
 const instance1 = axios.create({
@@ -263,7 +263,7 @@ export function request(config) {
 }
 ```
 
-#### axios的拦截器的使用[¶](#axios_5)
+### axios的拦截器的使用
 
 - axios提供了拦截器，用于我们每次在发送请求或者得到相应的请求后，进行对应的处理
 - 如何使用拦截器呢

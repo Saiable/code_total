@@ -1,10 +1,8 @@
 [TOC]
 
-# 01.导航栏的封装
+## TabBar 基本结构的搭建
 
-### TabBar 基本结构的搭建[¶](#tabbar)
-
-#### 实现思路[¶](#_1)
+### 实现思路
 
 1.如果在下方有一个单独的TabBar组件，如何封装
 
@@ -27,7 +25,7 @@
 vue init webpack TabBar
 ```
 
-#### tabbar TabBar和TabBarItem组件的封装[¶](#tabbar-tabbartabbaritem)
+### tabbar TabBar和TabBarItem组件的封装
 
 App.vue
 
@@ -136,7 +134,7 @@ TabBarItem.vue
 </style>
 ```
 
-#### 给TabBarItem传入active图片[¶](#tabbaritemactive)
+### 给TabBarItem传入active图片
 
 TabBarItem.vue
 
@@ -237,7 +235,7 @@ App.vue
 </style>
 ```
 
-#### TabBarItem和路由结合效果[¶](#tabbaritem)
+### TabBarItem和路由结合效果
 
 TabBarItem.vue
 
@@ -367,7 +365,7 @@ App.vue
         }
 ```
 
-#### TabBarItem的颜色动态控制[¶](#tabbaritem_1)
+### TabBarItem的颜色动态控制
 
 TabBarItem.vue
 
@@ -502,7 +500,7 @@ App.vue
 </style>
 ```
 
-#### 文件路径的引用[¶](#_2)
+### 文件路径的引用问题
 
 webpack.base.config.js
 

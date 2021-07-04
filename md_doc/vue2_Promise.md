@@ -1,10 +1,8 @@
 [TOC]
 
-# 05.Promise基础
+## Promise
 
-### Promise[¶](#promise)
-
-#### Promise的基本介绍和使用[¶](#promise_1)
+### Promise的介绍和基本使用
 
 Promise到底是什么 - Promise是一种异步解决方案
 
@@ -14,7 +12,7 @@ Promise到底是什么 - Promise是一种异步解决方案
 
 - 如何做呢，就是使用Promise
 
-#### Promise的三种状态和另外处理方式[¶](#promise_2)
+### Promise的三种状态和另外处理方式
 
 - pending:等待状态，比如正在进行网络请求，或者定时器没有到时间
 - fulfill:满足状态，当我们主动回调了resolve时，就处于该状态，并且回调.then()
@@ -34,7 +32,7 @@ new Promis((resolve, reject) => {
 )
 ```
 
-#### Promise的链式调用[¶](#promise_3)
+### Promise的链式调用
 
 我们在看Promise的流程图时，发现无论是then还是catch都可以返回一个Promise对象。
 
@@ -68,7 +66,7 @@ new Promise((resolve, reject) => {
 })
 ```
 
-#### Promised的all方法使用[¶](#promisedall)
+### Promised的all方法使用
 
 ```
 Promise.all([

@@ -1,10 +1,10 @@
 [TOC]
 
-# 06.vuex基础
+[TOC]
 
-### VueX[¶](#vuex)
+## VueX
 
-#### VueX概念和作用[¶](#vuex_1)
+### VueX概念和作用
 
 官方解释：VueX是一个转为Vue.js应用程序开发的状态管理模式 - 它采用集中式存储管理应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化 - VueX也集成到Vue的官方调试工具devtools.extension，并提供了诸如零配置的time-travel调试、状态快照导入导出等高级调试功能
 
@@ -14,7 +14,7 @@
 
 管理什么状态呢？ - 用户的登陆状态、用户名称、头像、地理位置等等 - 商品的收藏、购车车中的物品等等 - 这些的状态信息都是响应式的，我们都可以放在同一的地方，对它进行保存和管理，而且它们还是响应式的
 
-#### Vue-X单界面到多界面状态管理[¶](#vue-x)
+### Vue-X单界面到多界面状态管理
 
 单页面状态管理
 
@@ -95,7 +95,7 @@ export default {
 </style>
 ```
 
-#### 多界面状态管理[¶](#_1)
+### 多界面状态管理
 
 Vue已经帮我们做好了单个界面的状态管理，但是如果是多个界面呢？
 
@@ -120,7 +120,7 @@ Vue已经帮我们做好了单个界面的状态管理，但是如果是多个�
 
 上述过程可以通过`Devtolols`工具来实现
 
-#### vuex - devtools和mutations[¶](#vuex-devtoolsmutations)
+### vuex - devtools和mutations
 
 devtools for chrome下载
 
@@ -164,7 +164,7 @@ const store = new Vuex.Store({
 export default store
 ```
 
-#### state单一状态树的理解[¶](#state)
+### state单一状态树的理解
 
 Vuex里几个比较核心的概念
 
@@ -176,7 +176,7 @@ Vuex里几个比较核心的概念
 
 Single Source Truth
 
-#### getters使用[¶](#getters)
+### getters使用详解
 
 类似于computed计算属性
 
@@ -203,7 +203,7 @@ getters: {
 }
 ```
 
-#### mutation的携带参数[¶](#mutation)
+### mutation的携带参数
 
 index.js
 
@@ -318,7 +318,7 @@ export default store
 - 参数被称为是mutation的载荷（payload）
 - 如果参数不是一个，我们通常会以对象的形式传递，也就是payload是一个对象
 
-#### Mutation的提交[¶](#mutation_1)
+### mutation的提交风格
 
 - 通过commit进行提交是一种普通的方式
 - Vue还提供了另外一种风格，它是一个包含type属性的对象
@@ -346,7 +346,9 @@ updateInfo(state) {
 }
 ```
 
-#### Mutation的类型[¶](#mutation_2)
+### vuex-数据的响应式原理
+
+### mutation的类型常量
 
 store/mutations-types.js
 
@@ -369,7 +371,7 @@ mutations: {
 }
 ```
 
-#### actions的使用详解[¶](#actions)
+### vuex-actions的使用详解
 
 - mutation中不建议进行异步操作, devtools不能进行很好的跟踪
 - 但是某些情况，我们确实希望在Vuex中进行一些异步操作，比如网络请求
@@ -455,7 +457,7 @@ updateInfoe() {
 }
 ```
 
-#### modules详解[¶](#modules)
+### vuex-modules详解
 
 ```
 moudules: {
@@ -542,7 +544,7 @@ App.vue
 </script>
 ```
 
-#### store文件将的目录组织[¶](#store)
+### vuex-store文件将的目录组织
 
 可以把context写成{state,commit,rootState}
 
