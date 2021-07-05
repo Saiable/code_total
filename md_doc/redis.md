@@ -162,7 +162,10 @@ redis的关闭
 
   然后`kill -9 22661`杀掉redis进程即可
 
-- 
+- 配置密码
+
+  - 搜索`requirepass foobared`，然后修改`foobared`，记得删除`#`号取消注释
+  - 连同后，输入`auth 密码`即可
 
 #### 2.2.6. Redis介绍相关知识
 
@@ -281,21 +284,94 @@ Redis是单线程+多路IO复用技术
   	2~200
   ```
 
-- `mset`
+- `mset <key1> <value1> <key2> <value2>`
 
+  - 同时设置一个或多个key-value对
 
+- `mget <key1> <key2> <key3>`
 
+  - 同时获取一个或多个value
 
+- `msetnx <key1> <value1> <key2> <value3>`
+
+  - 同时设置一个或者多个key-value，当且仅当给定key都不存在
+
+- `getrange <key> <起始位置> <结束位置>`
+
+  - 获得值的范围，类似java中的substring，前包，后包
+
+- `setrange <key> <起始位置> <value>`
+
+  - 用`<value>`覆写`key`所存储的字符串值，从`<起始位置>`开始（索引从0开始）
+
+- `setex <key> 过期时间 <value>`
+
+  - 设置键值的同时，设置过期时间，单位：秒
+
+- `getset <key> <value>`
+
+  - 因新换旧，设置了新值的 同时获得旧值
 
 #### 3.2.3.数据结构
+
+`String`的数据结构为简单动态字符串(Simple Dynamic String，缩写是SDS)。是可以修改的字符串，内部结构实现上类似于Java的ArrayList，采用预分配冗余空间的方式来减少内存的频繁分配。
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210705214701371.png)
+
+如图所示，内部为当前字段串实际分配的空间capacity一般要高于字符串实际长度len。当字符串长度小于1M时，扩容都是加倍现有的空间，如果超过1M，扩容时一次只会多扩1M的空间。需注意的是字符串的最大长度为512M。
 
 ### 3.3.Redis列表（List）
 
 #### 3.3.1.简介
 
+单值多键
+
+Redis列表是简单的字符串列表，按照插入顺序排序。你可以添加一个元素到列表的头部（左边）或者尾部（右边）。
+
+它的底层实际是个**双向链表**，对两端的操作性能很高，同构索引下标来操作中间的节点性能会较差。
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210705215815358.png)
+
 #### 3.3.2.常用命令
 
+- `lpush/rpush <key> <value1> <value2> <value3>...`
+  - 从左边/右边插入一个或多个值
+- `lpop/rpop <key>`
+  - 从左边/右边吐出一个值。值在键在，值光键亡。
+- `rpoplpush <key1> <key2>`
+  - 从`<key1>`列表右边吐出一个值，插到`<key2>`列表左边。
+- `lrange <key> <start> <stop>`
+  - 按照索引下标获得元素（从左到右）
+  - `lrange mylist 0 -1`
+    - 0：左边第一个
+    - -1：右边第一个
+    - 表示获取所有
+- `index <key> <index>`
+  - 按照索引下标获取元素（从左到右）
+- `llen <key>`
+  - 获得列表长度
+- `linsert <key> before/after <value> <newvalue>`
+  - 在`<value>`的前面/后面插入`<newvalue>`插入值
+- `lrem <key> <n> <value>`
+  - 从左边删除n个value（从左到右）
+- `lset <key> <index> <value>`
+  - 将列表`<key>`下标为`index`的值替换成`value`
+
 #### 3.3.3.数据结构
+
+List的数据结构为快速链表quicklist。
+
+首先在列表元素较少的情况下会使用一块连续的内存存储，这个结构是ziplist，也即是压缩列表。
+
+它将所有的元素紧挨着一起存储，分配的是一块连续的内存。
+
+当数据量比较多的时候才会改成quicklist。
+
+因为普通的链表需要的附加指针空间太大，会比较浪费空间。比如这个列表里存的只是int类型的数据，结构上还需要两个额外的指针prev和next。
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210705225559448.png)
+
+redis将链表和ziplist结合起来组成了quicklist。也就是将多个ziplist使用双向指针串起来使用。这样既满足了快速的插入删除性能，又不会出现太大的空间冗余。
 
 ### 3.4.Redis集合（Set）
 
