@@ -76,7 +76,10 @@ vue-router是基于路由和组件的 - 路由用于设定访问路径，将路�
 
 安装和使用vue-router
 
-因为我们已经学历了webpack，后续开发中，我们主要是通过工程化的方式进行开发的，这里通过vuecli2来学习vue-router - 所以在后续，我们直接使用npm来安装路由即可 - 步骤一：安装vue-router `npm install vue-router@3.0.1 --save` - 步骤二：在模块化工程使用它（因为它是一个插件，所以可以通过Vue.use()来安装路由功能）
+因为我们已经学历了webpack，后续开发中，我们主要是通过工程化的方式进行开发的，这里通过vuecli2来学习vue-router - 所以在后续，我们直接使用npm来安装路由即可
+
+- 步骤一：安装vue-router `npm install vue-router@3.0.1 --save` 
+- - 步骤二：在模块化工程使用它（因为它是一个插件，所以可以通过Vue.use()来安装路由功能）
 
 ```
 第一步：导入路由对象，并且调用Vue.use(VueRouter)
