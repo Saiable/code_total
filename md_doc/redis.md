@@ -377,17 +377,91 @@ redis将链表和ziplist结合起来组成了quicklist。也就是将多个zipli
 
 #### 3.4.1.简介
 
+Redis set对外提供的功能与list类似是一个列表的功能，特殊之处在于set是可以**自动排重**的，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set提供了判断某个成员是否在一个set集合内的重要接口，这个也是list所不能提供的。
+
+Redis的Set是String类型的无序集合。它底层其实是一个value为null的hash表，所以添加，删除，查找的复杂度都是O(1)。
+
+一个算法，随着数据的增加，执行时间的长短，如果是O(1)，数据增加，查找数据的时间不变。
+
 #### 3.4.2.常用命令
 
+- `sadd <key> <value1> <value2>...`
+  - 将一个或多个member元素加入到集合key中，已经存在的member元素将被忽略
+- `smembers <key>`
+  - 取出该集合的所有值
+- `sismember <key> <value>`
+  - 判断集合`<key>`是否含有该`<value>`值，有1，没有0
+- `scard <key>`
+  - 返回该集合的元素个数
+- `srem <key> <value1> <value2>`...
+  - 删除集合中的某个元素
+- `spop <key>`
+  - 随机从该集合中吐出一个值
+- `srandmember <key> <n>`
+  - 随机从该集合中取出n个值，不会从集合中删除
+- `smove <source> <destiantion> value`
+  - 把集合中的一个值从一个集合移动到另一个集合
+- `sinter <key1> <key2>`
+  - 返回两个集合的交集元素
+- `sunion <key1> <key2>`
+  - 返回两个集合的并集元素
+- `sdiff <key1> <key2>`
+  - 返回两个集合的差集元素（key1中的，不包含key2中的）
+
 #### 3.4.3.数据结构
+
+Set数据结构是dict字典，字典使用哈希表实现的。
+
+Java中的HashSet的内部实现使用的是HashMap，只不过所有的value都指向同一个对象。
+
+Redis的set结构也是一样，它的内部结构也使用hash结构，所有的value都指向同一个内部值。
 
 ### 3.5.Redis哈希（Hash）
 
 #### 3.5.1.简介
 
+Redis hash是一个键值对集合
+
+Redis hash是一个string类型的field和value的映射表，hash特别适合用于存储对象。
+
+类似Java里面的`Map<StringObject>`
+
+用户ID为查找的key，存储的value用户对象包含姓名，年龄，生日等信息，如果用普通的key/value结构来存储
+
+主要有以下2中存储方式：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210706221754154.png)
+
+方法一：每次修改用户的某个属性，需要先反序列化，改好后再序列化回去，开销较大
+
+方法二：用户ID数据冗余
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210706223305385.png)
+
+方法三：通过key（用户ID）+field（属性标签）就可以操作对应属性数据了，既不需要重复存储数据，也不会带来序列化和并发修改控制的问题
+
 #### 3.5.2.常用命令
 
+- `hset <key> <field> <value>`
+  - 给`<key>`集合中的`<field>`键赋值`<value>`
+- `hget <key> <field> `
+  - 从`<key>集合<field>取出<value>`
+- `hmset <key> <field1> <value1> <field2> <value2> ...`
+  - 批量设置hash的值
+- `hexists <key> <field>`
+  - 查看哈希表key中，给定域field是否存在
+- `hkeys <key>`
+  - 列出该hash集合的所有field
+- `hvals <key>`
+  - 列出该hash集合的所有value
+- `hincrby <key> <field> <increment>` 
+  - 为哈希表key中的域filed的值加上增量1（-1）
+- `hset <key> <field> <value>`
+  - 将哈希表key中的域field的值设置为value，当且仅当域field不存在
+
 #### 3.5.3.数据结构
+
+Hash类型对应的数据结构是两种，ziplist（压缩列表），hashtable（哈希表），当field-value长度较短且个数较少时，使用ziplist，否则使用hashtable
 
 ### 3.6.Redis有序集合Zset（set）
 
