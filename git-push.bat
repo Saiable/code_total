@@ -7,5 +7,5 @@ echo git commit -m 'auto-push'
 git commit -m 'auto-push'
 
 git push
-echo 'git clone finish!'
+echo 'git push finish!'
 pause
