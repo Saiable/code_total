@@ -465,6 +465,8 @@ Hash类型对应的数据结构是两种，ziplist（压缩列表），hashtable
 
 ### 3.6.Redis有序集合Zset（set）
 
+SortedSet(zset)是Redis提供的一个非常特别的数据结构，一方面它等价于Java的数据机构`Map<String,Double>`，可以给每一个元素value赋予一个权重score，另一方面它又类似于TreeSet，内部的元素会按照权重score进行排序，可以得到每个元素的名次，还可以通过score的范围来获取元素的列表
+
 #### 3.6.1.简介
 
 #### 3.6.2.常用命令
