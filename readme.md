@@ -48,7 +48,7 @@
 ## 数据库
 - [MongoDB]()
 - [Postgresql](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql.md)
-- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)
+- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)  |  [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/redsi_conf.md)
 
 ## 计算机网络
 - [网络协议]()
@@ -61,7 +61,7 @@
 - [爬虫](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫.md)
 
 ### 标注工具
-- [brat]()
+- [brat]()  |  [brat安装步骤](https://gitee.com/mindcons/code_total/blob/master/md_doc/brat安装步骤.md)
 - [labelme]()
 
 ## 其他
