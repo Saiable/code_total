@@ -633,11 +633,15 @@ settings.py中的测试代码
   - 写代码操作redis
 
     ```python
-    import redisconn = redis.Redis(host='127.0.0.1',port='6379',password='foobared',encoding='utf-8')# 设置k1的值为v1，过期时间为10秒conn.set('k1','v1',ex=10)value = conn.get('k1')print(value)
+    import redis
+    conn = redis.Redis(host='127.0.0.1',port='6379',password='foobared',encoding='utf-8')# 设置k1的值为v1，过期时间为10秒
+    conn.set('k1','v1',ex=10)
+    value = conn.get('k1')
+    print(value)
     ```
-
+    
     激活虚拟环境，运行该python文件，结果如下
-
+    
     ```
     b'v1'
     ```
@@ -825,7 +829,12 @@ settings.py中的测试代码
   views/account.py
 
   ```python
-  """用户账户相关的功能：注册、短信、登录、注销"""from django.shortcuts import renderfrom web.forms.account import RegisterModeFormdef register(request):	form = RegisterModeForm()	return render(request,'register.html',{'form': form})
+  """用户账户相关的功能：注册、短信、登录、注销"""
+  from django.shortcuts import render
+  from web.forms.account import RegisterModeForm
+  def register(request):	
+      form = RegisterModeForm()	
+      return render(request,'register.html',{'form': form})
   ```
 
 - 把web的models.py按照app01的方式，重新生成一遍
@@ -833,13 +842,18 @@ settings.py中的测试代码
   web/models.py
 
   ```python
-  from django.db import models# Create your models here.class UserInfo(models.Model):	username = models.CharField(verbose_name = "用户名", max_length = 32)		# EmailField在数据库中，存储的实际还是字符串，区别在于ModelForm在页面上做展示的时候	email = models.EmailField(verbose_name = "邮箱", max_length = 32)		mobile_phone = models.CharField(verbose_name = "手机号", max_length = 32)	password = models.CharField(verbose_name = "密码", max_length = 32)
+  from django.db import models# Create your models here.
+  class UserInfo(models.Model):	
+      username = models.CharField(verbose_name = "用户名", max_length = 32)		# EmailField在数据库中，存储的实际还是字符串，区别在于ModelForm在页面上做展示的时候	
+      email = models.EmailField(verbose_name = "邮箱", max_length = 32)		
+      mobile_phone = models.CharField(verbose_name = "手机号", max_length = 32)	
+      password = models.CharField(verbose_name = "密码", max_length = 32)
   ```
-
+  
   运行`python manage.py makemigrations`和`python manage.py migrate`
-
+  
   修改web/forms/account.py的导包路径
-
+  
   ```python
   # from app01 import modelsfrom web import models
   ```
