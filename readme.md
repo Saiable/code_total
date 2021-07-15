@@ -48,7 +48,7 @@
 ## 数据库
 - [MongoDB]()
 - [Postgresql](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql.md)
-- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)  |  [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/redsi_conf.md)
+- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)  |  [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/redsi_conf.md)  |  [python操作redis]()
 
 ## 计算机网络
 - [网络协议]()
