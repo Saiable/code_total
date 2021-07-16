@@ -527,5 +527,440 @@ Redis客户端可以订阅任意数量的频道。
 
 注：发布的消息没有持久化，如果在订阅的客户端接受不到hello，只能收到订阅后发布的消息。
 
-## python操作Redis
+## 6.Redis6-新数据类型
+
+### 6.1.Bitmaps
+
+#### 6.1.1.简介
+
+现代计算机用二进制（位）作为信息的基础单位，1个字节等于8位，例如"abc"字符串是由3个字节组成，但实际在计算机存储时将其用二进制表示，"abc"分别对应的ASCII码分别是97、98、99，对应的二进制分别是01100001、01100010、01100011，如下图：
+
+image
+
+合理地使用操作位能够有效地提高内存使用率和开发效率。
+
+Redis提供了Bitmaps这个“数据类型”，可以实现对应的位操作。
+
+（1）Bitmaps本身不是一种数据类型，实际上它就是一个字符串(key-value)，但是它可以对字符串进行位操作。
+
+（2）Redis单独提供了一套命令，所以在Redis中使用Bitmaps和使用字符串的方法不太相同。可以把Bitmaps想象成一个以位为单位的数组，数据的每个单元只能存储0和1，数据的下标在Bitmaps中叫做偏移量。
+
+image
+
+#### 6.1.2.命令
+
+1.setbit
+
+（1）格式
+
+- `setbit <key> <offset> <value>`
+  - 设置Bitmaps中某个偏移量的值（0或1）
+  - offset：从0开始
+
+（2）实例
+
+- 每个独立用户是否访问过网站，存放在Bitmaps中，将访问的用户记录记做1，没有访问的用户记做0，用偏移量作为用户的id。
+
+- 设置键的第offset个位的值（从0算起），假设现在有20个用户，userid=1,6,11,15,19的用户对网站进行了访问，那么当前Bitmaps初始化结果如图
+
+  image
+
+  ```
+  unique:users:20201106
+  代表2020-11-06这天独立访问用户的bitmaps
+  ```
+
+注：很多应用的用户id以指定一个数字（例如10000）开头，直接将用户id和Bitmaps的偏移量对应势必会造成一定的浪费，通常的做法是每次做setbit操作时将用户id减去这个指定数字。
+
+在第一次初始化Bitmaps时，假如偏移量非常大，那么整个初始化过程执行会非常缓慢，可能会造成Redis的阻塞。
+
+2.getbit
+
+（1）格式
+
+- `getbit <key> <offset>`
+  - 获得Bitmaps中某个偏移量的值
+  - 获取键的第offset的值（从0开始计算）
+
+（2）实例
+
+获取id=8的用户是否在2020-11-06这天访问过，返回0说明没有访问过：
+
+`getbit unique:users:20201106 19`
+
+3.bitcount
+
+统计字符串被设置为1的数。一般情况下，给定的整个字符串都会被进行计数，通过指定额外的start或end参数，可以让计数只在特定的位上进行。start和end参数的设置，都可以使用负数值：比如-1表示最后一个位，而-2表示倒数第二个位，start、end是指bit组的字节的下表述，二者皆包含。
+
+（1）格式
+
+- `bitcount <key> [start end]`
+  - 统计字符串从start字节到end字节比特值为1的数量
+
+（2）实例
+
+计算2022-11-06这天的独立访问用户数量
+
+`bitcount unique:users:20201106`
+
+start和end代表起始和结束字节数，下面操作计算用户id在第1个字节到第3个自己之间的独立访问用户数，对应的用户id是11,15,19。
+
+`bitcount unique:users:20201106 1 3`
+
+
+
+注意：redis的setbit设置或清除的是bit位置，而bitcount计算的是byte位置。
+
+4.bitop
+
+（1）格式
+
+- `bitop and(or/not/xor) <destkey> [key...]`
+- bitop是一个复合操作，它可以做多个Bitmaps的and（交集）、or（并集）、not（非）、xor（异或）操作并将结果保存在destkey中。
+
+（2）实例
+
+2020-11-04日访问网站的userid=1,2,5,9
+
+`setbit unique:users:20201104 1 1`
+
+`setbit unique:users:20201104 2 1`
+
+`setbit unqiue:users:20201104 5 1`
+
+`setbit unique:users:20201104 9 1`
+
+
+
+2020-11-03日访问网站的useid=0,1,4,9
+
+`setbit unique:users:20201103 0 1`
+
+`setbit unique:users:20201103 1 1`
+
+`setbit unique:users:20201103 4 1`
+
+`setbit unique:users:20201103 9 1`
+
+
+
+计算出两天都访问过网站的用户数量
+
+`bitop and unique:users:and:20201104_03 unique:users:20201103 unique :users:20201104`
+
+image
+
+计算出任意一天都访问过网站的用户数量（例如月活跃就是类似这种），可以使用or求并集
+
+`bitcount unique:users:or:20201104_03`
+
+#### 6.1.3.Bitmaps和set对比
+
+假设网站有1亿用户，每天独立访问的用户有5千万，如果每天用集合类型和Bitmaps分别存储活跃用户就可以得到表
+
+**set和Bitmaps存储一天活跃用户对比**
+
+| 数据类型 | 每个用户id占用空间 | 需要存储的用户量 | 全部内存量           |
+| -------- | ------------------ | ---------------- | -------------------- |
+| set      | 64位               | 50000000         | 64位*5000000=400MB   |
+| Bitmaps  | 1位                | 100000000        | 1位*100000000=12.5MB |
+
+很明显，这种情况下使用Bitmaps能节省很多的内存空间，尤其是随着时间推移，节省的内存还是非常可观的。
+
+**set和Bitmaps存储独立用户空间对比**
+
+| 数据类型 | 一天   | 一个月 | 一年  |
+| -------- | ------ | ------ | ----- |
+| set      | 400MB  | 12GB   | 144GB |
+| Bitmaps  | 12.5MB | 375MB  | 4.5GB |
+
+但Bitmaps并不是万金油，加入该网站每天的独立访问用户很少，例如只有10万（大量的僵尸用户），那么两者的对比如下表所示，很显然，这时候使用Bitmaps就不太合适了，因为基本上大部分位都是0。
+
+**set和Bitmaps存储一天活跃用户对比（独立用户比较少）**
+
+| 数据类型 | 每个userid占用空间 | 需要存储的用户量 | 全部内存量           |
+| -------- | ------------------ | ---------------- | -------------------- |
+| set      | 64位               | 100000           | 64位*100000=800kb    |
+| Bitmaps  | 1位                | 100000000        | 1位*100000000=12.5MB |
+
+### 6.2.HyperLogLog
+
+#### 6.2.1.简介
+
+在工作当中，我们经常会遇到和统计相关的功能需求，比如统计网站PV（PageView页面访问量)，可以使用Redis的incr、incrby轻松实现。
+
+但像UV（UniqueVisitor，独立访客）、独立IP数、搜索记录数等需要去重和计数的问题如何解决？这种求集合中不重复元素个数的问题称为基数问题。
+
+解决基数问题的方法有很多种方案：
+
+（1）数据存储在MySQL中，使用distinct count计算不重复个数
+
+（2）使用Redis提供的hash、set、bitmaps等结构来处理
+
+以上的方案结果精确，但随着数据不断增加，导致占用空间越来越大，对于非常大的数据集是非常不切实际的。
+
+能否能够降低一定的精度来平衡存储空间？Redis推出了HyperLogLog。
+
+Redis HyeprLogLog是用来做基数统计的算法，HyperLogLog的优点是，在输入元素数量或者体积非常大时，计算基数所需的空间总是固定的，并且是很小的。
+
+在Redis里面，每个HyperLogLog键只需要花费12KB内存，就可以计算接近2^64个不同元素的基数。这和计算基数时，元素越多耗费内存越多的集合形成鲜明对比。
+
+但是，因为HyperLogLog只会根据输入元素来计算基数，而不会储存元素本身，所以HyperLogLog不能像集合那样，返回输入的各个元素。
+
+
+
+什么是基数？
+
+比如数据集{1,3,5,7,5,7,8}，那个这个数据集的基数集为{1,3,5,7,8}，基数（不重复的元素）为5。基数估计就是在误差可接受的范围内，快速计算基数。
+
+#### 6.2.2.命令
+
+1.pfadd
+
+（1）格式
+
+- `pfadd <key> <element> [element...]`
+  - 添加指定元素到HyperLogLog中
+
+（2）实例
+
+`pfadd program "java" "python"`
+
+将所有元素添加到指定HyperLogLog数据结构中。如果执行命令后HLL估计的近似基数发生变化，则返回1，否则返回0.
+
+2.pfcount
+
+（1）格式
+
+- `pfcount <key> [key...]`
+  - 计算HLL的近似基数，可以计算多个HLL，比如用HLL存储每天的UV，计算一周的UV可以用7天的UV合并计算即可。
+
+（2）实例
+
+`pfcount program`
+
+3.pfmerge
+
+（1）格式
+
+- `pfmerge <destkey> <sourcekey> [sourcekey...]`
+  - 将一个或多个HLL合并后的结果存储在另一个HLL中，比如每月活跃用户可以使用每天的活跃用户来合并计算可得。
+
+（2）实例
+
+### 6.3.Geospatial
+
+#### 6.3.1.简介
+
+Redis3.2中增加了对GEO类型的至此。GEO，Geographic，地理信息的缩写。该类型，就是元素的2维坐标，在地图上就是经纬度。
+
+Redis基于该类型，提供了经纬度设置，查询，范围查询，经纬度Hash等常见操作。
+
+#### 6.3.2.命令
+
+1.geoadd
+
+（1）格式
+
+- `geoadd <key> <longtiude> <latitude> <member> [longtitude latitude member...]`
+  - 添加地理位置（经度、纬度、名称）
+
+（2）实例
+
+`geoadd china:city 121.47 31.23 shanghai`
+
+`geoadd china:city 106.50 29.53 chognqing 114.05 22.52 shenzhen 116.38 39.90 beijing`	
+
+南北极无法直接添加，一般会下载城市数据，直接通过java程序一次性导入。
+
+有效的经度从-180度到180度。有效的纬度从-85.05112878度到85.05112878度
+
+当坐标位置超出指定范围时，该命令会返回一个错误。
+
+已经添加的数据，是无法再往里面添加的。
+
+2.geopos
+
+（1）格式
+
+- `geopos <key> <member> [member...]`
+  - 获得指定地区的坐标值
+
+（2）案例
+
+`geopos china:city shanghai`
+
+3.geodist
+
+（1）格式
+
+- `geodist <key> <member1> <member2> [m|km|ft|mi]`
+  - 获取两个位置之间的直线距离
+
+（2）实例
+
+获取两个位置之间的直线距离
+
+`geodist china:city beijing shanghai km `
+
+单位：
+
+m表示单位为米[默认值]
+
+km表示单位为千米
+
+mi表示单位为英里
+
+ft表示单位为英尺
+
+如果用户没有显示地指定单位参数，那么GEODIST默认使用米为单位
+
+4.georadius
+
+（1）格式
+
+- `georadius <key> <longtitude> radius m|km|ft|mi`
+  - 以给定的经纬度为中心，找出某一半径内的元素
+
+（2）实例
+
+`georadius china:city 110 30 1000 km`
+
+## 7.python操作Redis
+
+### 7.1.远程连接redis注意事项：
+
+- bind注释掉或者修改为`0.0.0.0`
+- 关闭保护模式`protected-mode no`
+- 关闭linux防火墙
+  - 查看防火墙状态：`systemctl status firewalld`
+  - 临时关闭防火墙：`systemctl stop firewalld`
+- `pip install redis`安装redis库
+
+#### 7.1.1.一般连接
+
+```python 
+from redis import Redis
+
+'''
+	一般连接，使用Redis连接
+'''
+conn = Redis(host ='localhost',port = '6379',password = 'foobared',db = 0,decode_responses = True)
+# host可以是ip地址
+# decode_responses = True，表示以字符串的格式，存储数据，否则将以二进制存储数据
+conn.set('k1','v1')
+value = conn.get('k1')
+print(value)
+```
+
+```python
+from redis import Redis
+
+'''
+	一般连接，使用StrictRedis连接
+'''
+conn = StrictRedis(host='localhost',port='6379',password='foobared',db=0,decode_responsed=True)
+
+conn.set('k1','v1')
+value = conn.get('k1')
+print(value)
+```
+
+redis-py提供了两个类Redis和StrictRedis用于实现Redis的命令，StrictRedis用于实现大部分官方的命令，并使用官方的语法和命令，Redis是StrcitRedis子类，用于向后兼容旧版本的redis-py
+
+#### 7.1.2.使用连接池
+
+```python
+from redis import Redis
+from redis import ConnectionPool
+
+'''
+	使用连接池，连接Redis库的Redis
+'''
+# 创建pool
+pool = ConnectionPool(host = 'localhost',port = '6379',password = 'foobared',db = 0,decode_responses = True)
+#传入pool
+conn = Redis(connection_pool = pool)
+#下方是获取操作的结果
+value1 = conn.hget('mark','name')
+value2 = conn.hmget('mark','name','age','h')
+value3 = conn.hgeall('mark')
+
+# 下方是输出操作结果
+print(value1,type(value1),sep='类型是：')
+print(value2,type(value2),sep='类型是：')
+print(value3,type(value3),sep='类型是：')
+```
+
+```python
+from redis import Redis
+from redis import ConnectionPool
+
+'''
+	使用连接池，连接Redis库的StrictRedis
+'''
+pool = ConnectionPool(host='lcoahost',port='6379',password='foobared',db=0,decode_responses=True)
+conn = StrictRedis(connection_pool = pool)
+
+conn = Redis(connection_pool = pool)
+#下方是获取操作的结果
+value1 = conn.hget('mark','name')
+value2 = conn.hmget('mark','name','age','h')
+value3 = conn.hgeall('mark')
+
+# 下方是输出操作结果
+print(value1,type(value1),sep='类型是：')
+print(value2,type(value2),sep='类型是：')
+print(value3,type(value3),sep='类型是：')
+```
+
+redis-py使用connection_pool来管理对一个redis-server的所有连接，避免每次建立、释放连接的开销，默认，每个Redis实例都会维护一个自己的连接池。
+
+可以直接建立一个连接池，然后作为参数Redis，这样就可以实现**多个Redis实例共享一个连接池**
+
+```python
+import redis
+
+kwargs = {
+    'hosts':'127.0.0.1',
+    'port':'6379',
+    'decode_responses':'True',
+    'retry_on_timeout':3,
+    'max_connections':1024 # 默认2^31
+}
+```
+
+
+
+
+
+连接池底层原理：
+
+
+
+### 7.2.测试相关数据类型
+
+#### 7.2.1.Key
+
+#### 7.2.2.String
+
+#### 7.2.3.List
+
+#### 7.2.4.Set
+
+#### 7.2.5.Hash
+
+#### 7.2.6.Zset
+
+### 7.3.模拟验证码发送
+
+需求：
+
+1.输入手机号，点击发送后，随机生成6位数字码，2分钟有效
+
+2.输入验证码，点击验证，返回成功或失败
+
+3.每个手机号每天只能输入3次。
+
+
 
