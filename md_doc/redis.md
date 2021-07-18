@@ -167,6 +167,10 @@ redis的关闭
   - 搜索`requirepass foobared`，然后修改`foobared`，记得删除`#`号取消注释
   - 连同后，输入`auth 密码`即可
 
+- 卸载redis
+  - 杀掉所有redis相关进程
+    - 进入到`user/local/bin`目录，删除`rm -rf redis*`
+
 #### 2.2.6. Redis介绍相关知识
 
 - 端口6379从何而来：`Alessia Merz`
@@ -835,6 +839,7 @@ ft表示单位为英尺
 - 关闭linux防火墙
   - 查看防火墙状态：`systemctl status firewalld`
   - 临时关闭防火墙：`systemctl stop firewalld`
+- 如果使用的是腾讯云或者华为云等云服务器，请在控制台开启6379端口号。
 - `pip install redis`安装redis库
 
 #### 7.1.1.一般连接
@@ -930,14 +935,6 @@ kwargs = {
 }
 ```
 
-
-
-
-
-连接池底层原理：
-
-
-
 ### 7.2.测试相关数据类型
 
 #### 7.2.1.Key
@@ -958,9 +955,263 @@ kwargs = {
 
 1.输入手机号，点击发送后，随机生成6位数字码，2分钟有效
 
+- 随机验证码
+
+  - random
+
+  ```python
+  # 生成6位数字验证码
+  import random
+  
+  def get_code():
+      code = random.randint(111111,999999)
+      return code
+  
+  code = get_code()
+  print(code)
+  ```
+
+- 2分钟有效
+
+  - 把验证码放到redis里面，设置过期时间为120秒
+
+  ```python
+  # 每个手机每天只能发送3次，验证码放到redis中，设置过期时间
+  
+  ```
+
+  
+
 2.输入验证码，点击验证，返回成功或失败
+
+- 判断验证码是否一致
+  - 从redis中获取验证码，和输入的验证码进行比较
 
 3.每个手机号每天只能输入3次。
 
+- incre每次发送之后+1
+- 大于2的时候，提交不能发送
 
+## 8.Redis_事务、机制、秒杀
+
+### 8.1.Redis事务的定义
+
+Redis事务是一个单独的隔离操作：事务中所有的命令个都会**序列化**、按顺序的执行。事务在执行的过程，不会被其他客户端发送来的命令请求打断。
+
+Redis事务的主要作用，就是防止串联多个命令，防止别的命令插队。
+
+### 8.2.Muti、Exec、discard
+
+从输入命令`Muti`开始，输入的命令都会一次进入命令序列中，但不会执行，直到输入`Exec`后，Redis会将之前的命令队列中的命令依次执行。
+
+组队的过程中可以通过`discard`来放弃组队。
+
+img
+
+成功的情况
+
+```redis
+127.0.0.1:6379> multi
+OK
+127.0.0.1:6379(TX)> set k1 v1
+QUEUED
+127.0.0.1:6379(TX)> set k2 v2
+QUEUED
+127.0.0.1:6379(TX)> exec
+1) OK
+2) OK
+```
+
+### 8.3.事务的错误处理
+
+#### 8.3.1.组队阶段错误
+
+组队阶段中，某个命令出现了报告错误，执行时整个的所有队列都会被取消。
+
+```redis
+127.0.0.1:6379> multi
+OK
+127.0.0.1:6379(TX)> set k1 v1
+QUEUED
+127.0.0.1:6379(TX)> set k2 v2
+QUEUED
+127.0.0.1:6379(TX)> set k3
+(error) ERR wrong number of arguments for 'set' command
+127.0.0.1:6379(TX)> exec
+(error) EXECABORT Transaction discarded because of previous errors.
+```
+
+#### 8.3.2.执行阶段错误
+
+如果执行阶段，某个命令报出了错误，则只有报错的命令不被执行，而其他的命令都会执行，不会回滚。
+
+```redis
+127.0.0.1:6379> multi
+OK
+127.0.0.1:6379(TX)> set k1 v1
+QUEUED
+127.0.0.1:6379(TX)> incr k1
+QUEUED
+127.0.0.1:6379(TX)> set k2 v2
+QUEUED
+127.0.0.1:6379(TX)> exec
+1) OK
+2) (error) ERR value is not an integer or out of range
+3) OK
+```
+
+### 8.4.为什么要做成事务
+
+想象一个场景：有很多人有你的账户，同时去参加双十一抢购。
+
+### 8.5.事务冲突的问题
+
+#### 8.5.1.例子
+
+- 一个请求想给金额减8000
+- 一个请求想给金额减5000
+- 一个请求想给金额减1000
+
+img
+
+#### 8.5.2.悲观锁
+
+img
+
+**悲观锁**（Pessimistic Lock），顾名思义，就是很悲观，每次去拿数据的时候，都认为别人会修改，所以每次在拿数据的时候，都会上锁。这样别人想拿这个数据就会block，直到它拿到锁。
+
+**传统的关系型数据库里边就用到了很多这样的锁机制**，比如**行锁**，**表锁**等，**读锁**，**写锁**等，都是在操作之前先加上锁。
+
+#### 8.5.3.乐观锁
+
+img
+
+**乐观锁**（Opitimistic Lock），顾名思义，就是很乐观，每次去拿数据的时候，都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有更新这个数据，可以使用版本号等机制。
+
+乐观锁适用于多读的应用类型，这样可以提高吞吐量。
+
+Redis就是利用这种`check-and-set`机制实现事务的。
+
+#### 8.5.4.WATCH key [key...]
+
+在执行`multi`之前，先执行`watch key1 [key2]`，可以监控一个（或者多个）key，**如果在事务之前，这个（或者这些）key被其他命令所改动，那么事务将被打断。**
+
+**乐观锁在redis中的使用：**
+
+**终端一：**
+
+```redis
+127.0.0.1:6379> set balance 100
+OK
+127.0.0.1:6379> keys *
+1) "balance"
+127.0.0.1:6379> watch balance
+OK
+127.0.0.1:6379> multi
+OK
+127.0.0.1:6379(TX)> incrby balance 10
+QUEUED
+127.0.0.1:6379(TX)> exec
+1) (integer) 110
+```
+
+**终端二：**
+
+```redis
+127.0.0.1:6379> watch balance
+OK
+127.0.0.1:6379> multi
+OK
+127.0.0.1:6379(TX)> incrby balance 20
+QUEUED
+127.0.0.1:6379(TX)> exec
+(nil)
+```
+
+#### 8.5.5.unwatch
+
+取消WATCH命令对所有key的监视。
+
+如果在执行WATCH命令之后，EXEC命令或DISCARD命令先被执行了的话，那么就不需要再执行UNWATCH了。
+
+### 8.6.Redis事务三特性
+
+- 单独的隔离操作
+  - 事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。
+- 没有隔离级别的概念
+  - 队列中的命令没有提交之前都不会实际被执行，因为事务提交前任何指令都不会被实际执行
+- 不保证原子性
+  - 事务中如果有一条命令给执行失败，其后的命令仍然会被执行，没有回滚。
+
+### 8.7.Reds事务秒杀案例
+
+#### 8.7.1.解决计数器和人员记录的事务操作
+
+img
+
+秒杀逻辑流程图
+
+#### 8.7.2.Redis事务--秒杀并发模拟
+
+使用ab工具模拟测试
+
+- centos6默认安装
+- centos7需要手动安装
+
+##### 1.联网：
+
+`yum install httpd-tools`
+
+##### 2.无网络：
+
+- `cd /run/media/root/CentOS7 x86_64/Packages`（路径和Centos6不同）
+- 顺序安装
+  - `apr-1.4.8-3.el7.x86_64.rpm`
+  - `apr-util-1.5.2-6.el7.x86_64.rpm`
+  - `httpd-tools-2.4.6-67.el7.centos.x86_64.rpm`
+
+输入`ab --help`来检查是否成功
+
+`Usage:ab [options] [http[s]://hostname[:port]/path]`
+
+##### 3.测试及结果
+
+- 通过浏览器测试
+
+  `ab -n 1000 -c 100 http://127.0.0.1:8080/test`
+
+  - -n 表示请求次数
+  - -c 表示并发次数
+  - -t 表示content-type
+  - -p 表示postfile，post提交时存放参数的位置，需要创建一个文件
+
+- 再通过ab测试
+
+  `ab -n 1000 -c 100 -p postfile ~/postfile -T application/x-www.form-urlencoded http://127.0.0.1:8080/test`
+
+  - postfile内容：`prodid=0101&`
+
+  - `~`表示当前目录
+
+  
+
+## 9.Redis持久化
+
+
+
+### 9.1.Redis持久化之RDB
+
+
+
+### 9.2.Redis持久化之AOF
+
+
+
+## 10.Redis主从复制
+
+
+
+## 11.Redis集群
+
+## 
 
