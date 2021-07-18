@@ -54,7 +54,7 @@
 - [网络协议]()
 
 ## linux
-- [shell脚本]()
+- [shell脚本]()  |  [linux常用命令](https://gitee.com/mindcons/code_total/blob/master/md_doc/linux常用命令.md)
 
 ## 大数据
 ### 爬虫

@@ -1190,10 +1190,24 @@ img
   `ab -n 1000 -c 100 -p postfile ~/postfile -T application/x-www.form-urlencoded http://127.0.0.1:8080/test`
 
   - postfile内容：`prodid=0101&`
-
   - `~`表示当前目录
-
   
+
+##### 4.超卖问题
+
+
+
+##### 5.连接超时问题
+
+
+
+##### 6.库存遗留问题
+
+乐观锁造成的库存遗留问题
+
+###### a.Lua脚本
+
+Lua是一个小巧的脚本语言，Lua脚本很容易被C/C++代码调用，
 
 ## 9.Redis持久化
 
