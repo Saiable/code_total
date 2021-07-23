@@ -907,7 +907,6 @@ from redis import ConnectionPool
 pool = ConnectionPool(host='lcoahost',port='6379',password='foobared',db=0,decode_responses=True)
 conn = StrictRedis(connection_pool = pool)
 
-conn = Redis(connection_pool = pool)
 #下方是获取操作的结果
 value1 = conn.hget('mark','name')
 value2 = conn.hmget('mark','name','age','h')
