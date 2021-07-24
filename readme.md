@@ -39,7 +39,7 @@
 - [面试题]()
 ## 后端
 ### 后端语言
-- [Python]()
+- [Python]()  |  [python_socket](https://gitee.com/mindcons/code_total/blob/master/md_doc/python_socket.md)  |  
 - [Java]()
 ### 后端框架
 - [Django3.6](https://gitee.com/mindcons/code_total/blob/master/md_doc/django3.6FAQ.md)  |  [数据结构]()  |  [Watchman](https://gitee.com/mindcons/code_total/blob/master/md_doc/Watchman.md)
