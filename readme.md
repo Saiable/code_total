@@ -58,10 +58,10 @@
 
 ## 大数据
 ### 爬虫
-- [爬虫基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫基础.md)
+- [爬虫基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫基础.md)  |  [行业网站收集](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫_行业网站收集.md)  |  [xpath指南](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫_xpath指南.md)
 
 ### 标注工具
-- [brat]()  |  [brat安装步骤](https://gitee.com/mindcons/code_total/blob/master/md_doc/brat安装步骤.md)
+- [brat]()  |  [brat安装部署](https://gitee.com/mindcons/code_total/blob/master/md_doc/brat安装步骤.md)
 - [labelme]()
 
 ## 其他
