@@ -1,6 +1,6 @@
 [TOC]
 
-[教程来源](https://www.bilibili.com/video/BV1a7411z75u?from=search&seid=6695941388107712803)
+[教程来源](https://www.bilibili.com/video/BV1a7411z75u)
 
 ### 1.Socket概念
 
