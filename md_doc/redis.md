@@ -103,6 +103,63 @@ make
 redis-server
 ```
 
+但是前台启动，可以看到读写过程，
+
+配置文件中，更改了`save 30 5`，表示30s秒5个key发生变化，就进行持久化存储；
+
+连接上redis后，进行如下操作：
+
+```
+127.0.0.1:6380> ping
+PONG
+127.0.0.1:6380> set k1 v1
+OK
+127.0.0.1:6380> set k2 v2
+OK
+127.0.0.1:6380> set k3 v3
+OK
+127.0.0.1:6380> set k4 v4
+OK
+127.0.0.1:6380> set k5 v5
+OK
+127.0.0.1:6380> set k6 v6
+OK
+127.0.0.1:6380> set k7 v7
+OK
+
+```
+
+后台记录如下：
+
+```
+27593:M 31 Jul 2021 10:36:35.320 * Ready to accept connections
+27593:M 31 Jul 2021 10:40:24.873 * 5 changes in 30 seconds. Saving...
+27593:M 31 Jul 2021 10:40:24.874 * Background saving started by pid 28246
+28246:C 31 Jul 2021 10:40:24.887 * DB saved on disk
+28246:C 31 Jul 2021 10:40:24.887 * RDB: 6 MB of memory used by copy-on-write
+27593:M 31 Jul 2021 10:40:24.974 * Background saving terminated with success
+```
+##### 2.2.4.2.启动报错信息
+
+- WARNING overcommit memory is set to 0
+
+  ```
+  WARNING overcommit_memory is set to 0! 
+  
+  Background save may fail under low memory condition. 
+  
+  To fix this issue add '`vm.overcommit_memory = 1`' to `/etc/sysctl.conf` 
+  
+  and then reboot or run the command '`sysctl vm.overcommit_memory=1`' for this to take effect.
+  ```
+
+- 解决方案
+
+  ```
+  ```
+
+  
+
 #### 2.2.5. 后台启动（推荐）
 
 redis目录中，有一个文件`redis.conf`，把它复制到/etc目录下（或自定义目录下）
@@ -170,6 +227,8 @@ redis的关闭
 - 卸载redis
   - 杀掉所有redis相关进程
     - 进入到`user/local/bin`目录，删除`rm -rf redis*`
+
+
 
 #### 2.2.6. Redis介绍相关知识
 
