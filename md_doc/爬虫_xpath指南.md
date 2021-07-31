@@ -12,3 +12,21 @@
 XXX.xpath("//tr[position()>1]/td[1]/input/@value").extract()
 ```
 
+### XPath查找没有id或类的元素
+
+https://qa.1r1g.com/sf/ask/168289131/
+
+很简单:
+
+```
+//tr[not(@id) and not(@class)]
+```
+
+这会给你所有`tr`缺乏这两种元素`id`和`class`属性.如果您希望所有`tr`元素都缺少其中一个,请使用`or`而不是`and`:
+
+```
+//tr[not(@id) or not(@class)]
+```
+
+当以这种方式使用属性和元素时,如果属性或元素具有值,则将其视为是真的.如果它丢失则将其视为错误.
+

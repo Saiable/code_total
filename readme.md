@@ -67,4 +67,5 @@
 - [labelme]()0
 
 ## 其他
-- [Mkdocs](https://gitee.com/mindcons/code_total/blob/master/md_doc/Mkdocs.md)
+- [Mkdocs](https://gitee.com/mindcons/code_total/blob/master/md_doc/Mkdocs.md)  [各种IDE设置](https://gitee.com/mindcons/code_total/blob/master/md_doc/IDE设置.md)
+
