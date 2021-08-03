@@ -900,6 +900,7 @@ ft表示单位为英尺
   - 临时关闭防火墙：`systemctl stop firewalld`
 - 如果使用的是腾讯云或者华为云等云服务器，请在控制台开启6379端口号。
 - `pip install redis`安装redis库
+- 注意，链接redis的文件名，不能取名为redis
 
 #### 7.1.1.一般连接
 
