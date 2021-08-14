@@ -71,10 +71,6 @@ StopIteration
 
 
 
-看完觉得奇怪的同学，是不是觉得一个对象能拿出一个迭代器很amazing。好像编的一样，别急，继续看上去，下面有答案。
-
-
-
 ##### 5.判断一个对象是否可迭代
 
 isinstance(object,classinfo)内置函数可以判断一个对象是否是一个已知的类型，类似 type()。
@@ -82,7 +78,7 @@ isinstance(object,classinfo)内置函数可以判断一个对象是否是一个�
 - object -- 实例对象。
 - classinfo -- 可以是直接或间接类名、基本类型或者由它们组成的元组。
 
-在这之前，还需要知道collections模块里的Iterable。通俗点讲，凡是可迭代对象都是这个类的实例对象。下面来验证一下：
+在这之前，还需要知道collections模块里的Iterable。通俗点讲，凡是**可迭代对象都是这个类的实例对象**。下面来验证一下：
 
 
 
@@ -113,9 +109,9 @@ False
 
 看完第4点，有些人就感觉很奇怪，例如：[1,2,3]不就是一个列表，一个对象吗？怎么还能拿出一个迭代器来了？
 
-首先，我们从第5点可以知道，可迭代对象其实都是collections模块里的Iterable类创建出来的实例的。你写一个列表，以为他不是任何类创建的，只是单纯一个列表？不是的，其实它就是Iterable类创建的实例对象。点进Iterable的类看一下，你会发现新大陆。
+首先，我们从第5点可以知道，**可迭代对象其实都是collections模块里的Iterable类创建出来的实例**的。你写一个列表，以为他不是任何类创建的，只是单纯一个列表？不是的，其实它就是Iterable类创建的实例对象。点进Iterable的类看一下，你会发现新大陆。
 
-[
+
 
 ```
 class Iterable(metaclass=ABCMeta):
@@ -158,11 +154,7 @@ True
 
 
 
- 
-
-骚不骚？什么都没有，就一个魔法方法，创建的对象就是可迭代对象了。
-
-
+迭代器就是重复地做一些事情，可以简单的理解为循环，在python中实现了__iter__方法的对象是可迭代的，实现了next()方法的对象是迭代器，这样说起来有点拗口，实际上要想让一个迭代器工作，至少要实现__iter__方法和next方法。很多时候使用迭代器完成的工作使用列表也可以完成，但是如果有很多值列表就会占用太多的内存，而且使用迭代器也让我们的程序更加通用、优雅、pythonic。
 
 ##### 7.迭代器为什么能用next()函数进行迭代？
 
@@ -249,4 +241,185 @@ print(next(iterator))输出：张三李四王五张三李四王五
 注意看注释，如果原理都懂，这其实是一个很简单的例子。
 
 #### 生成器
+
+##### 1.生成器是什么？
+
+先说一种比较简单的生成器，通过例子慢慢来体会什么是生成器。
+
+
+
+```
+# 列表生成式
+L = [x for x in range(5)]
+print(L)
+
+#简单的生成器
+G = (x for x in range(5))  # G就是一个生成器，也是一个迭代器，迭代器也是可迭代对象，所以这个G也可以说是可迭代对象
+print(next(G))
+print(next(G))
+print(next(G))
+print(next(G))
+print(next(G))
+
+输出：
+[0, 1, 2, 3, 4]
+0
+1
+2
+3
+4
+```
+
+
+
+把列表生成器的[]改为()就变成一个简单的生成器。由上面的例子，我们大概可以知道，生成器就是一个迭代器，把数据一个一个拿出来，可以减少内存的负担。
+
+那么，yield又是一个什么东西呢？为什么说他优雅呢？
+
+当我们写的代码输出的结果，想一个一个出来。有两种常用的方法：
+
+方法1.我们可以创建一个迭代器类，然后把代码写进类里，用类来创建一个可迭代对象，然后用next()函数一个一个把结果迭代出来。
+
+方法2.我们可以用代码函数的合适位置加上yield，这时候这个函数就变成一个生成器了，不需要再创建一个迭代器类，不需要再写__iter__，__next__方法了。这样一来不是很方便，很优雅吗？哈哈哈哈～
+
+口说无凭，下面我们2个方法都做一下，让你们体会一下：
+
+我们做一个斐波那契的数列生成器。斐波那契数列的第一个数是0，第二个数是1，第三个数是第一、二个数相加，第四个数是第二、三个数相加......
+
+方法1：
+
+
+
+```
+class FeiboIterator():
+    def __init__(self):
+        self.a = 0
+        self.b = 1
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+            num = self.a
+            self.a,self.b = self.b,self.a+self.b
+            return num
+
+
+iterator = FeiboIterator()
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))
+
+输出：0
+1
+2
+3
+5
+8
+13
+```
+
+
+
+是不是很麻烦？又要初始化，又要写__iter__和__next__魔方方法。
+
+方法2：
+
+
+
+```
+def feibo():
+    a = 0
+    b = 1
+    while True:
+        yield a  # 假如yield后面紧接着一个数据，就会把数据返回，作为next()函数或者for ...in...迭代出的下一个值
+        a,b = b,a+b
+
+
+generator = feibo()
+
+print(next(generator))
+print(next(generator))
+print(next(generator))
+print(next(generator))
+print(next(generator))
+print(next(generator))
+print(next(generator))
+print(next(generator))
+
+输出：
+0
+1
+1
+2
+3
+5
+8
+13
+```
+
+
+
+看！只有6行代码，是不是很elegant？关于这个程序是怎么运行的？yield是怎么运作的？我们等下就讲，现在需要注意几点：
+
+1.上面代码的红色字那里！**假如yield后面紧接着一个数据，就会把数据返回，作为next()函数或者for ...in...迭代出的下一个值。**
+
+2.假如函数中有yield，就不再是函数。而是一个能返回生成器的函数！注意！是返回，这个函数并不是一个生成器。**（修正：这句话发现有错误，这个函数也是一个生成器）**
+
+3.拿到函数的生成器后，可以和迭代器一样，用next()函数获得下一个值。
+
+好了，该来理解一下yield是怎么运作的了！
+
+1.第一次唤醒生成器时，是从函数的起始位置开始，直到遇到yield，就会暂停函数，挂起函数。
+2.第二次唤醒生成器时，是从yield断点处开始，直到又遇到yield。
+3.当生成器已经没有yield，再使用next，则抛StopIteration异常。
+
+然后，我们来理一下上面用yield写的代码。
+
+第一次用next()唤醒生成器时，从函数的开头开始运行，遇到yield a，返回a，然后暂停函数，并记住函数是运行到这个位置的。
+
+第二次唤醒生成器，从yield a断点处开始，然后a,b开始赋值，while True循环又遇见yield a，返回a，然后暂停函数，并记住函数是运行到这个位置的。
+
+下面唤醒多少次都是这个道理，但是由于这个函数是死循环，所以不会没有yield，也就不会抛出StopIteration异常。
+
+##### 2.yield接受传参
+
+其实yield还能接受值，用send方法进行传入。代码体会一下：
+
+
+
+```
+def gg():
+    i = 1
+    while True:
+        recv = yield i
+        print("接收到一个值：",recv)
+        i += 1
+
+generator = gg()
+
+print(next(generator))
+print(generator.send("456"))
+print(generator.send("789"))
+
+输出：
+1
+接收到一个值： 456
+2
+接收到一个值： 789
+3
+```
+
+
+
+实现过程和上面的例子一样。
+
+要懂得的是，**yield = a，会返回a。**
+
+**b = yield，会把yield接收的值赋值给b。**
 
