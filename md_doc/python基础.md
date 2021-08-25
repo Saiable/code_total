@@ -547,3 +547,15 @@ class email_logit(logit):    '''    一个logit的实现版本，可以在函数
 从现在起，@email_logit 将会和 @logit 产生同样的效果，但是在打日志的基础上，还会多发送一封邮件给管理员。
 
 > 原文地址：https://eastlakeside.gitbooks.io/interpy-zh/content/decorators/
+
+### 导包
+
+不同模块（文件夹）下的文件互相引用
+
+```python
+# 获得父级目录
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 把父级路径添加到环境变量中
+sys.path.append(BASE_DIR)
+```
+
