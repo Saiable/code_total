@@ -101,4 +101,83 @@ __all__ = [
 
 - 最后多出来的逗号在python中是允许的，也是符合PEP8风格的。这样修改一个接口的暴露，就只修改一行，方便版本控制的时候看`diff`。
 
-`__init__.py`
+### `__init__.py`
+
+#### 1.标识该目录是一个Python的模块包（module package）
+
+如果使用python相关IDE来进行开发，那么目录中存在该文件，该目录就会被识别是`module package`
+
+#### 2.简化模块导入操作
+
+##### 2.1.`__init__.py是如何工作的`
+
+如果目录中包含了`__init__.py`时，当用`import`导入该目录时，会执行`__init__.py`里面的代码。
+
+##### 2.2.控制模块导入
+
+在执行import的时候，当前目录是不会变的（就算是执行子目录的文件），还是需要完整的包名。
+
+
+
+综上，我们可以在`__init__.py`指定默认需要导入的模块
+
+##### 2.3.偷懒的导包方式
+
+要用`__all__`来约束`from mypackage import *`的导包行为
+
+`__all__`关联了一个模块列表，当执行`from mypackage import *`时，就会导入列表中的模块。
+
+#### 3.配置模块的初始化操作
+
+该文件就是一个正常的python代码文件，可以将初始化代码放在该文件中。
+
+### 闭包
+
+定义：函数定义和函数表达式位于另一个函数的函数体内（嵌套函数）。
+
+意义：返回的函数对象，不仅仅是一个函数对象，在该函数外还包裹了一层作用域，这使得该函数无论在何处调用，优先使用自己外层包裹的作用域。
+
+使用场景：装饰器
+
+### 软件开发原则
+
+#### 开放-封闭原则
+
+- 封闭：已实现的功能代码不应该被修改
+- 开放：对现有功能的扩展开放
+
+不能再原有代码里新增，不能更改原有代码调用方式，
+
+更改函数名指向但不能直接调用原函数 ===>嵌套函数
+
+
+
+### `*args、**kwargs`
+
+*args用发送一个非键值对的可变数量的参数列表，给一个函数
+
+```python
+def test(f_arg,*argv):
+    print('first normal arg:',f_arg)
+    for arg in argv:
+        print('another arg through *argv:',arg)
+
+test('aaa','bbb','cccc','dddd')
+
+# first normal arg: aaa
+# another arg through *argv: bbb
+# another arg through *argv: cccc
+# another arg through *argv: dddd
+```
+
+**kwargs允许将不定长度的键值对，作为参数传递给一个参数。
+
+如果想要在一个函数里处理带名字的参数，应该使用**kwargs。
+
+```python
+def greet_me(**kwargs):
+    for key,value in kwargs.items():
+        print("{0}--{1}--".format(key,value))
+
+greet_me(name='aaa')
+```

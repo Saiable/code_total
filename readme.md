@@ -39,7 +39,7 @@
 - [面试题]()
 ## 后端
 ### 后端语言
-- [python基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/python基础.md)  |  [python_socket](https://gitee.com/mindcons/code_total/blob/master/md_doc/python_socket.md)  | [python设计模式](https://gitee.com/mindcons/code_total/blob/master/md_doc/python设计模式.md)  |  [正则表达式](https://gitee.com/mindcons/code_total/blob/master/md_doc/正则表达式.md)
+- [python基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/python基础.md)  |  [python_socket](https://gitee.com/mindcons/code_total/blob/master/md_doc/python_socket.md)  | [python设计模式](https://gitee.com/mindcons/code_total/blob/master/md_doc/python设计模式.md)  |  [正则表达式](https://gitee.com/mindcons/code_total/blob/master/md_doc/正则表达式.md)  |  [实践不懂的知识点](https://gitee.com/mindcons/code_total/blob/master/md_doc/python一开始不理解的.md)
 - [Java]()
 ### 后端框架
 - [Django3.6](https://gitee.com/mindcons/code_total/blob/master/md_doc/django3.6FAQ.md)  |  [数据结构]()  |  [Watchman](https://gitee.com/mindcons/code_total/blob/master/md_doc/Watchman.md)
@@ -49,7 +49,7 @@
 
 ## 数据库
 - [MongoDB]()
-- [Postgresql](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql.md)
+- [Postgresql](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql.md)  |  [Postgresql数据库连接](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql数据库连接.md)
 - [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)  |  [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/redsi_conf.md)  |  [python操作redis]()
 
 ## 计算机网络

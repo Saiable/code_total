@@ -1,10 +1,10 @@
 [TOC]
 
-# 什么是PostgreSql？[¶](#postgresql)
+# 一、什么是PostgreSql？
 
 PostgreSQL 是一个自由的对象-关系数据库服务器(数据库管理系统)，是从伯克利写的 POSTGRES 软件包发展而来的。经过十几年的发展， PostgreSQL 是世界上可以获得的最先进的开放源码的数据库系统， 它提供了多版本并发控制，支持几乎所有SQL语句（包括子查询，事务和用户定义类型和函数），并且可以获得非常广阔范围的（开发）语言绑定 （包括C,C++,Java,perl,python,php,nodejs,ruby）。
 
-## 知识点[¶](#_1)
+## 知识点
 
 - 面向关系的数据库
 - Oracle
@@ -15,99 +15,147 @@ PostgreSQL 是一个自由的对象-关系数据库服务器(数据库管理系�
 - MongoDB
 - Redis
 
-### 数据库排名[¶](#_2)
+### 数据库排名
 
 https://db-engines.com/en/ranking
 
-## 官方网站[¶](#_3)
+## 官方网站
 
 https://www.postgresql.org/
 
-## 技术准备[¶](#_4)
+## 技术准备
 
 - SQL语言基础
 
-## 使用环境[¶](#_5)
+## 使用环境及安装
+
+（参照官网）https://www.postgresql.org/download/linux/redhat/
 
 - Ubuntu Server 16 LTS
 - PostgreSql 9.5.x
-
-## 安装[¶](#_6)
 
 ```
 $ sudo apt-get install postgresql
 $ psql --version
 ```
 
-# 初来乍到数据库[¶](#_1)
+- Centos 7
+- PostgreSql 13
 
-## 知识点[¶](#_2)
+```shell
+# Install the repository RPM:
+sudo yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+# Install PostgreSQL:
+sudo yum install -y postgresql13-server
+
+# Optionally initialize the database and enable automatic start:
+sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
+sudo systemctl enable postgresql-13
+sudo systemctl start postgresql-13
+```
+
+
+
+# 二、初来乍到数据库
+
+## 知识点
 
 - psql的基础
 - 数据库简单操作
 - 写个SQL
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
-$ sudo su postgres
+# 切换postgres用户，加 - 是为了解决报权限错误
+$ sudo su - postgres
+
+# 查看数据库版本
 $ psql --version
+
+# 查看数据库情况
 $ psql -l
+
+# 创建数据库
 $ createdb komablog
+
 $ psql -l
+
+# 进入到komablog数据库
 $ psql komablog
+
 > help
 > \h
 > \?
 > \l
 > \q
+
 $ psql komablog
 > select now();
 > select version();
 > \q
+
+# 删除数据库
 $ dropdb komablog
 $ psql -l
 ```
 
-# 操作数据表[¶](#_1)
+# 三、操作数据表
 
-## 知识点[¶](#_2)
+## 知识点
 
 - create table
 - drop table
 - psql使用
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
-$ sudo su postgres
+$ sudo su - postgres
 $ createdb komablog
 $ psql -l
 $ psql komablog
+
+# 创建posts表
 > create table posts (title varchar(255), content text);
+
+# 查看所有表
 > \dt
+
+# 查看指定posts表
 > \d posts
+
+# 修改表名
 > alter table posts rename to komaposts;
 > \dt
+
+# 删除表
 > drop table komaposts;
 > \dt
 > \q
-$ nano db.sql
+
+# 指定编辑器，编写sql语句
+$ vi db.sql # 或者nano db.sql
 ...
 create table posts (title varchar(255), content text);
 ...
+
+# 进入到数据库
 $ psql komablog
+
+# 运行sql
 > \i db.sql
 > \dt
 ```
 
-# 字段类型[¶](#_1)
+# 四、字段类型
 
-## 知识点[¶](#_2)
+## 知识点
 
 - PostgreSql的基础数据类型
 
-## PostgreSql的基础数据类型[¶](#postgresql)
+## PostgreSql的基础数据类型
 
 - 数值型：
 - integer(int)
@@ -133,15 +181,15 @@ $ psql komablog
 
 https://www.postgresql.org/docs/9.5/static/datatype.html
 
-# 添加表约束[¶](#_1)
+# 五、添加表约束
 
-## 知识点[¶](#_2)
+## 知识点
 
 - 表子段的约束条件
 
-## 实战演习[¶](#_3)
+## 实战演习
 
-### db.sql[¶](#dbsql)
+**db.sql**
 
 ```
 create table posts (
@@ -165,13 +213,13 @@ primary key(not null, unique):主键，不能为空，且不能重复
 */
 ```
 
-# INSERT语句[¶](#insert)
+# 六、INSERT语句
 
-## 知识点[¶](#_1)
+## 知识点
 
 - insert into [tablename] (field, ...) values (value, ...)
 
-## 实战演习[¶](#_2)
+## 实战演习
 
 ```
 $ psql komablog
@@ -179,27 +227,57 @@ $ psql komablog
 > \d posts
 ```
 
-### SQL部分[¶](#sql)
+### SQL部分
 
 ```
 > insert into posts (title, content) values ('', '');
+ERROR:  new row for relation "posts" violates check constraint "posts_content_check"
+DETAIL:  Failing row contains (1, , , t, f, 2021-08-28 08:15:57.275567).
+
+
 > insert into posts (title, content) values (NULL, '');
+ERROR:  null value in column "title" of relation "posts" violates not-null constraint
+DETAIL:  Failing row contains (2, null, , t, f, 2021-08-28 08:15:57.275567).
+
+
 > insert into posts (title, content) values ('title1', 'content11');
+INSERT 0 1
+
+
 > select * from posts;
+ id | title  |  content  | is_draft | is_del |        created_date        
+----+--------+-----------+----------+--------+----------------------------
+  3 | title1 | content11 | t        | f      | 2021-08-28 08:15:57.275567
+
+
 > insert into posts (title, content) values ('title2', 'content22');
+INSERT 0 1
+
+
 > insert into posts (title, content) values ('title3', 'content33');
+INSERT 0 1
+
+
 > select * from posts;
+ id | title  |  content  | is_draft | is_del |        created_date        
+----+--------+-----------+----------+--------+----------------------------
+  3 | title1 | content11 | t        | f      | 2021-08-28 08:15:57.275567
+  4 | title2 | content22 | t        | f      | 2021-08-28 08:15:57.275567
+  5 | title3 | content33 | t        | f      | 2021-08-28 08:15:57.275567
+(3 rows)
+
+
 ```
 
-# SELECT语句[¶](#select)
+# 七、SELECT语句
 
-## 知识点[¶](#_1)
+## 知识点
 
 - select 基本使用
 
-## 实战演习[¶](#_2)
+## 实战演习
 
-### init.sql[¶](#initsql)
+**init.sql**
 
 ```
 create table users (
@@ -218,7 +296,7 @@ insert into users (player, score, team) values
 ('白边', 19.8, '热火');
 ```
 
-### SQL实战[¶](#sql)
+**SQL实战**
 
 ```
 $ psql komablog
@@ -233,15 +311,15 @@ $ psql komablog
 > select player, score from users;
 ```
 
-# WHERE语句[¶](#where)
+# 八、WHERE语句
 
-## 知识点[¶](#_1)
+## 知识点
 
 - where语句的使用
 
 使用where语句来设定select,update,delete语句数据抽出的条件。
 
-## 实战演习[¶](#_2)
+## 实战演习
 
 ```
 > select * from users;
@@ -250,13 +328,15 @@ $ psql komablog
 > select * from users where score > 20 and score < 30;
 > select * from users where team = '勇士';
 > select * from users where team != '勇士';
+# 抽出以“阿”开头的字段，百分号可以对应多个
 > select * from users where player like '阿%';
+# 下划线表示只对应一个
 > select * from users where player like '阿_';
 ```
 
-# 数据抽出选项[¶](#_1)
+# 九、数据抽出选项
 
-## 知识点[¶](#_2)
+## 知识点
 
 select语句在抽出数据时，可以对语句设置更多的选项，已得到想要的数据。
 
@@ -264,59 +344,81 @@ select语句在抽出数据时，可以对语句设置更多的选项，已得�
 - limit
 - offset
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
+# 升序
 > select * from users order by score asc;
+
+# 降序
 > select * from users order by score desc;
+
 > select * from users order by team;
+
+# 先按team，再按score排序
 > select * from users order by team, score;
 > select * from users order by team, score desc;
 > select * from users order by team desc, score desc;
+
+# 通过偏移量来控制分页
 > select * from users order by score desc limit 3;
 > select * from users order by score desc limit 3 offset 1;
 > select * from users order by score desc limit 3 offset 2;
 > select * from users order by score desc limit 3 offset 3;
 ```
 
-# 统计抽出数据[¶](#_1)
+# 十、统计抽出数据
 
-## 知识点[¶](#_2)
+## 知识点
 
 - distinct
 - sum
 - max/min
 - group by/having
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
+# 去重
 > select distinct team from users;
+
+# 求和
 > select sum(score) from users;
+
 > select max(score) from users;
 > select min(score) from users;
+
+# 取出当前表得分最大的用户信息
 > select * from users where score = (select max(score) from users);
 > select * from users where score = (select min(score) from users);
+
+# 按球队分组，然后取出球队和最大得分
 > select team, max(score) from users group by team;
+
 > select team, max(score) from users group by team having max(score) >= 25;
 > select team, max(score) from users group by team having max(score) >= 25 order by max(score);
 ```
 
-# 方便的函数[¶](#_1)
+# 十一、方便的函数
 
-## 知识点[¶](#_2)
+## 知识点
 
 - length
+  - 长度
 - concat
+  - 连接两个字符串
 - alias
+  - 别名
 - substring
+  - 切割字符串
 - random
+  - 返回随机数
 
 参考网站：
 
 https://www.postgresql.org/docs/9.5/static/functions.html
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
 > select player, length(player) from users;
@@ -329,14 +431,14 @@ https://www.postgresql.org/docs/9.5/static/functions.html
 > select * from users order by random() limit 1;
 ```
 
-# 更新和删除[¶](#_1)
+# 十二、更新和删除
 
-## 知识点[¶](#_2)
+## 知识点
 
 - update [table] set [field=newvalue,...] where ...
 - delete from [table] where ...
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
 > update users set score = 29.1 where player = '阿詹';
@@ -345,15 +447,15 @@ https://www.postgresql.org/docs/9.5/static/functions.html
 > delete from users where score > 30;
 ```
 
-# 变更表结构[¶](#_1)
+# 十三、变更表结构
 
-## 知识点[¶](#_2)
+## 知识点
 
 - alter table [tablename] ...
 - create index ...
 - drop index ...
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
 > \d users;
@@ -371,15 +473,15 @@ https://www.postgresql.org/docs/9.5/static/functions.html
 > \d users;
 ```
 
-# 操作多个表[¶](#_1)
+# 十四、操作多个表
 
-## 知识点[¶](#_2)
+## 知识点
 
 - 表结合查询的基础知识
 
-## 实战演习[¶](#_3)
+## 实战演习
 
-### renew.sql[¶](#renewsql)
+### renew.sql
 
 ```
 create table users (
@@ -410,7 +512,7 @@ insert into twitters (user_id, content) values
 (1, '明年听说有条大鱼要来,谁呀?');
 ```
 
-### SQL实行[¶](#sql)
+### SQL实行
 
 ```
 $ dropdb komablog;
@@ -424,23 +526,23 @@ $ psql komablog;
 > select u.player, t.content from users as u, twitters as t where u.id = t.user_id and u.id = 1;
 ```
 
-# 使用视图[¶](#_1)
+# 十五、使用视图
 
-## 视图概念[¶](#_2)
+## 视图概念
 
 视图（View）是从一个或多个表导出的对象。视图与表不同，视图是一个虚表，即视图所对应的数据不进行实际存储，数据库中只存储视图的定义，在对视图的数据进行操作时，系统根据视图的定义去操作与视图相关联的基本表。
 
-## 小马解释[¶](#_3)
+## 小马解释
 
 视图就是一个SELECT语句，把业务系统中常用的SELECT语句简化成一个类似于表的对象，便于简单读取和开发。
 
-## 知识点[¶](#_4)
+## 知识点
 
 - 使用数据库视图(view)
 - create view ...
 - drop view ...
 
-## 实战演习[¶](#_5)
+## 实战演习
 
 ```
 > select u.player, t.content from users as u, twitters as t where u.id = t.user_id and u.id = 1;
@@ -452,22 +554,22 @@ $ psql komablog;
 > \dv
 ```
 
-## 实战建议[¶](#_6)
+## 实战建议
 
 在自己项目中，为了提高数据查询速度，可在表中加入索引index。同时对于经常需要查询的语句，可以提前建立视图view，方便于编码和管理。
 
-# 使用事务[¶](#_1)
+# 十六、使用事务
 
 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 事务处理可以确保除非事务性单元内的所有操作都成功完成，否则不会永久更新面向数据的资源。通过将一组相关操作组合为一个要么全部成功要么全部失败的单元，可以简化错误恢复并使应用程序更加可靠。一个逻辑工作单元要成为事务，必须满足所谓的ACID（原子性、一致性、隔离性和持久性）属性。事务是数据库运行中的逻辑工作单位，由DBMS中的事务管理子系统负责事务的处理。
 
-## 知识点[¶](#_2)
+## 知识点
 
 - PostgreSql数据库事务使用
 - begin
 - commit
 - rollback
 
-## 实战演习[¶](#_3)
+## 实战演习
 
 ```
 > select * from users;
@@ -487,11 +589,11 @@ $ psql komablog;
 
 # 教程来源如下
 
-## 课程文件[¶](#_4)
+## 课程文件
 
 https://gitee.com/komavideo/LearnPostgreSql
 
-## 小马视频频道[¶](#_5)
+## 小马视频频道
 
 http://komavideo.com
 
