@@ -54,3 +54,5 @@ passwd: password updated successfully
 ###  3.修改配置文件
 
 在Centos下，默认的数据目录在 /var/lib/pgsql/版本号/data 下 ，配置的参数文件就在此目录下。
+
+### 4.直接通过ssh连接服务器，就进到psql数据库了。
