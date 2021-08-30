@@ -1,3 +1,2 @@
-from news_ctechw.test import main
-
+from news.news_ofweek.test import main
 main()
