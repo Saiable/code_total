@@ -1,3 +1,0 @@
-- OFweek 物联网
-    - 产业新闻 https://iot.ofweek.com/CATList-132200-8100-iot-1.html
-    - 需求：只爬前10页，并且每天更新
