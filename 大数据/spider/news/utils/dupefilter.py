@@ -17,11 +17,11 @@ sys.path.append(dirname(abspath(__file__)))
 sys.path.append(dirname(dirname(abspath(__file__))))
 
 # redis配置
-from config import Redis_LOCAL
+from utils.config import Redis_LOCAL
 
 # 日志输出
-from log_template import Logger
-logger = Logger(init_file=__file__, file_name="../LOG_INDUSTRY/行业资讯-redis日志.log",
+from utils.log_template import Logger
+logger = Logger(init_file=__file__, file_name="./LOG_INDUSTRY/行业资讯-redis日志.log",
                 logging_level=logging.ERROR).logger_fh()  # redis日志文件
 
 

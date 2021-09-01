@@ -14,7 +14,9 @@ PG_SQL_LOCAL = {
     'port': "5432"
 }
 
+
 # redis的配置信息
+
 Redis_LOCAL = {
     'host': '1.116.68.249',
     'port': 6380,

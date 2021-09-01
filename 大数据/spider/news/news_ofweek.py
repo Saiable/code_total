@@ -1,13 +1,21 @@
-from os.path import dirname, abspath
-from urllib.parse import urljoin
-from copy import deepcopy
+import re
 from lxml import etree
-import re,json,time,traceback,sys
+import json
+from urllib.parse import urljoin
+import time
 
-from industry_templete import IndustryInfo
+################################################################
+import traceback
+from copy import deepcopy
+import sys
+from os.path import dirname, abspath
 
 sys.path.append(dirname(abspath(__file__)))
 sys.path.append(dirname(dirname(abspath(__file__))))
+from industry_templete import IndustryInfo
+
+
+######################################################################
 
 class Spider(IndustryInfo):
     website_name = '维科网'
@@ -15,21 +23,27 @@ class Spider(IndustryInfo):
     media_type = '网媒'
     content_source_type = '原贴'
 
-    def __init__(self, tb_name='industry.ofweek'):
+    def __init__(self, tb_name="industry.ofweek"):
         self.tb_name = tb_name
+        super(Spider, self).__init__(tb_name=tb_name)
+        self.BREAK_COUNT = 10
         self.COUNT = 0
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
         }
-        super(Spider, self).__init__(tb_name=tb_name)
-
 
     def start(self):
+        """
+        爬虫入口
+        """
+        # 栏目及base_url 映射表
         web_dict = {
             "资讯": "https://iot.ofweek.com/CATList-132200-8100-iot-{0}.html",
         }
+
         # 循环栏目
         for key, value in web_dict.items():
+
             # 必带
             self.COUNT = 0  # 每次调用之前不要忘记这个参数,不然一直累加没有重置会出问题
             self.rf_filter.delete_value_expire()  # 每次启动爬虫前调用redis时间清除函数
@@ -98,7 +112,7 @@ class Spider(IndustryInfo):
             if is_today:
                 pass
             else:
-                 # 根据实际情况来使用continue还是return True
+                # 根据实际情况来使用continue还是return True
                 continue
 
             # 返回True说面插入成功,不是重复url否则就是采集过了
@@ -140,10 +154,60 @@ class Spider(IndustryInfo):
         else:
             return False
 
-    def get_content(self):
-        pass
+    def get_content(self, url):
+        """
+        正文的获取
+        """
+        # 必须带
+        content = ''
+        content_html = ''
+
+        # 与列表页注释同
+        html = self.get_html(url=url, headers=self.headers, encode_html=False)
+        if html.encoding in ["gb2312", "GB2312", "gbk", "GBK"]:
+            html.encoding = "gbk"
+        elif html.apparent_encoding in ["gb2312", "GB2312", "gbk", "GBK"]:
+            html.encoding = 'gbk'
+        elif html.encoding in ["UTF-8", "utf-8", "utf8"]:
+            html.encoding = 'utf-8'
+        elif html.apparent_encoding in ["UTF-8", "utf-8", "utf8"]:
+            html.encoding = 'utf-8'
+        else:
+            html.encoding = html.apparent_encoding
+        if html:
+            response = etree.HTML(html.text)
+            # 正文所在的标签, 尽量不要包含标题
+            content_h = response.xpath('//div[@class="artical-content"]')
+            if content_h:
+                content_html = etree.tostring(content_h[0], encoding='utf-8').decode(encoding='utf-8')
+                content_html = self.plastic_html(content_html).replace("\x00", "\uFFFD")
+                content = etree.HTML(content_html).xpath('//text()')
+                content = "\n".join(content)
+            else:
+                content = ''
+                content_html = ''
+
+        return content, content_html
 
     def main(self):
-        pass
+        """
+        主入口,用于循环,不要动
+        """
+
+        try:
+            intervals = sys.argv[1]  # 获取前面传递过来的 更新间隔时间
+        except Exception as err:
+            intervals = 1800
+
+        while True:
+            try:
+                self.start()
+            except Exception as err:
+                error_location = traceback.format_exc()
+                self.logger.error('{} 爬虫报错 {}'.format(__file__, error_location))
+            time.sleep(int(intervals))
 
 
+if __name__ == '__main__':
+    spider = Spider()
+    spider.main()
