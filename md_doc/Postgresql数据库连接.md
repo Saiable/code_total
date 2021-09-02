@@ -88,6 +88,16 @@ https://www.yiibai.com/postgresql/postgresql_python.html
 12	cursor.fetchall()
 　　这个例程获取所有查询结果（剩余）行，返回一个列表。空行时则返回空列表。
 
+#### 每条完整的sql执行步骤
+
+1. 建立连接获得 connect 对象
+2. 获得游标对象，一个游标对象可以对数据库进行执行操作，非线程安全，多个应用会在同一个连接种创建多个光标；
+3. 书写sql语句
+4. 调用execute()方法执行sql
+5. 抓取数据（可选操作）
+6. 提交事物
+7. 关闭连接
+
 ```python
 
 import os
@@ -178,3 +188,4 @@ if __name__=='__main__':
     deleteOperate()
 ```
 
+#### python操作psql功能封装

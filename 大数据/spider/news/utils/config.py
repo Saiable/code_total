@@ -6,7 +6,7 @@
 # KAFKA_HOST = '192.168.0.14:9092'
 
 # PG库的配置信息
-PG_SQL_LOCAL = {
+POSTGRES_CONFIG = {
     'database': 'komablog',
     'user': 'postgres',
     'password': 'psqlsai@345',
@@ -15,7 +15,7 @@ PG_SQL_LOCAL = {
 }
 
 # redis的配置信息
-Redis_LOCAL = {
+REDIS_CONFIGL = {
     'host': '1.116.68.249',
     'port': 6380,
     'password': 'foobaredsai',
