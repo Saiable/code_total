@@ -14,20 +14,22 @@ class Postgresql():
         except Exception as err:
             print(err)
 
-    def create_table(self):
+    def create_table(self,data_dict,table_name):
         conn, cursor = self.connect_psql()
-        sql = """CREATE TABLE student (
-        id serial4 PRIMARY KEY, 
-        num int4,
-        name varchar(25));"""
-        # 执行语句
-        cursor.execute(sql)
-        print("student table created successfully")
-        # 事物提交
-        conn.commit()
-        # 关闭数据库连接
+        keys = data_dict.keys()
+        sql = "create table " + table_name + "(id serial primary key,"
+        for field in keys:
+            sql += field + " text,"
+        sql = sql[:-1] + ");"
+        print(sql)
         conn.close()
 
 if __name__ == '__main__':
     store = Postgresql()
-    store.create_table()
+
+    data = {
+        'title': 'aaa',
+        'content': 'aaaa',
+    }
+
+    store.create_table(data_dict=data,table_name="test.mytable")
