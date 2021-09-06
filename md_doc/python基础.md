@@ -428,6 +428,7 @@ print(generator.send("789"))
 不同模块（文件夹）下的文件互相引用
 
 ```python
+import os, sys
 # 获得父级目录
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 把父级路径添加到环境变量中

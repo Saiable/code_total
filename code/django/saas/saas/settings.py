@@ -10,11 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os
+import os,sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+# sys.path.append(BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -125,7 +125,15 @@ local_settings.field
 '''
 SMS = 0
 
+# 腾讯云短信应用的app_id
+TENCENT_SMS_APP_ID = 666
+# 腾讯云短信应用的app_key
+TENCENT_SMS_APP_KEY = "666"
+# 腾讯云短信签名内容
+TENCENT_SMS_SIGN = "python之路"
 try:
     from .local_settings import *
-except ImportError as errr:
-    print('import error',err)
+except ImportError as err:
+    print('import error:',err)
+
+# print(TENCENT_SMS_APP_ID)

@@ -264,9 +264,9 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
   SMS = 0
   
   try:
-      from .local_settings import *
-  except ImportError as errr:
-      print('import error',err)
+      from local_settings import *
+  except ImportError as err:
+      print('import error:',err)
   ```
 
 - **切记：**给别人代码时(上传git、gitee时)，不要给local_settings
@@ -450,6 +450,19 @@ Requirement already satisfied: typing-extensions==3.10.0.0 in f:\workspace\pytho
   - 创建模板，获取`模板ID`
 
   接下来使用开始使用python发送短信
+  
+- 配置参数
+
+  ```python
+  # 腾讯云短信应用的app_id
+  TENCENT_SMS_APP_ID = 666
+  # 腾讯云短信应用的app_key
+  TENCENT_SMS_APP_KEY = "666"
+  # 腾讯云短信签名内容
+  TENCENT_SMS_SIGN = "python之路"
+  ```
+
+  
 
 ##### 2）qcloudsmsm-py-0.1.4源码解析
 
@@ -519,6 +532,8 @@ def send_sms_multi(phone_num_list, template_id, param_list):
 
 在saas根目录中，运行`manage.py runserver 8000`，将在本地启动服务`127.0.0.1:8000`
 
+
+
 ##### 4）结果
 
 ```
@@ -547,7 +562,7 @@ def send_sms_multi(phone_num_list, template_id, param_list):
 
 #### 1.2华为云短信
 
-
+仅支持企业用户
 
 #### 1.3阿里云短信
 
