@@ -119,7 +119,8 @@ virtualenv 环境名称 --python='D:\python\python3.6.exe' # 前提是已经加�
 因为当前电脑上并没有安装python3.6，所以会报错，报错信息如下：
 
 ```python
-F:\workspace\py_virtual_env>virtualenv s36 --python=python3.6RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.6'
+F:\workspace\py_virtual_env>virtualenv s36 --python=python3.6
+RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.6'
 ```
 
 这里不指定版本，使用第一次安装的虚拟环境即可。
@@ -163,7 +164,7 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 
 ### 2.搭建Django项目
 
-#### 2.1.窗口模式搭建Django
+#### 2.1.窗口模式搭建Django（不推荐）
 
 - 打开pycharm（自行搜索下载pycharm破解版）
 
@@ -187,7 +188,7 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 
 - 打开`saas/saas/setting.py`，查看最后倒数第二行，显示了`# https://docs.djangoproject.com/en/1.11/howto/static-files/`，就表示当前安装的是1.11的版本
 
-#### 2.3命令行模式搭建Django项目
+#### 2.3命令行模式搭建Django项目（推荐）
 
 - 激活指定的virtualenv环境
 
@@ -211,7 +212,13 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
   文件解析
 
   ```
-  manage.py ----- Django项目里面的工具，通过它可以调用django shell和数据库，启动关闭项目与项目交互等，不管你将框架分了几个文件，必然有一个启动文件，其实他们本身就是一个文件。settings.py ---- 包含了项目的默认设置，包括数据库信息，调试标志以及其他一些工作的变量。urls.py ----- 负责把URL模式映射到应用程序。wsgi.py ---- runserver命令就使用wsgiref模块做简单的web server，后面会看到renserver命令，所有与socket相关的内容都在这个文件里面了，目前不需要关注它。
+  manage.py ----- Django项目里面的工具，通过它可以调用django shell和数据库，启动关闭项目与项目交互等，不管你将框架分了几个文件，必然有一个启动文件，其实他们本身就是一个文件。
+  
+  settings.py ---- 包含了项目的默认设置，包括数据库信息，调试标志以及其他一些工作的变量。
+  
+  urls.py ----- 负责把URL模式映射到应用程序。
+  
+  wsgi.py ---- runserver命令就使用wsgiref模块做简单的web server，后面会看到renserver命令，所有与socket相关的内容都在这个文件里面了，目前不需要关注它。
   ```
 
 - 启动django项目
@@ -229,13 +236,21 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 - 在settings.py末尾，导入local_settings
 
   ```python
-  try:    from .local_settings import *except ImportError:    pass
+  try:
+      from .local_settings import *
+  except ImportError as errr:
+      print('import error',err)
+  
   ```
 
 - saas/saas目录下，创建local_settings.py文件
 
   ```python
-  #!/usr/bin/env python# encoding: utf-8''''''# 设置中文LANGUAGE_CODE = 'zh-hans'# 短信模板SMS = 666
+  # 设置中文
+  LANGUAGE_CODE = 'zh-hans'
+  
+  # 短信模板SMS = 666
+  SMS = 666
   ```
 
 - 如果在local_settings.py中增加了settings.py中不存在的字段，需要在settings.py中指定一下默认值
@@ -243,7 +258,15 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
   settings.py末尾修改如下：
 
   ```python
-  SMS = 0try:    from .local_settings import *except ImportError:    pass
+  '''
+  local_settings.field
+  '''
+  SMS = 0
+  
+  try:
+      from .local_settings import *
+  except ImportError as errr:
+      print('import error',err)
   ```
 
 - **切记：**给别人代码时(上传git、gitee时)，不要给local_settings
@@ -259,13 +282,28 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 - 项目根目录创建.gitignore
 
   ```
-  # pycharm.idea/.DS_Store__pycache__/*.py[cod]*$py.class# Django stuff:local_settings.py*.sqlite3# database migrations*/migrations/*.py!*/migrations/__init__.py
+  # pycharm
+  .idea/
+  .DS_Store
+  
+  __pycache__/
+  *.py[cod]
+  *$py.class
+  
+  # Django stuff:
+  local_settings.py
+  *.sqlite3
+  
+  # database migrations
+  */migrations/*.py
+  !*/migrations/__init__.py
   ```
 
 - 让gitee管理项目
 
   ```
-  (myproject) F:\workspace\python\saas>git init    (myproject) F:\workspace\python\saas>git add .    (myproject) F:\workspace\python\saas>git commit -m '第一次提交'
+  (myproject) F:\workspace\python\saas>git init    (myproject) F:\workspace\python\saas>git add .    
+  (myproject) F:\workspace\python\saas>git commit -m '第一次提交'
   ```
 
   这三个命令，将代码管理在了本地
@@ -273,12 +311,32 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 - gitee本地项目，推送到远程仓库
 
   ```
-  # 给仓库路径添加别名(myproject) F:\workspace\python\saas>git remote add origin https://gitee.com/mindcons/saas_codereview.git# 推送到远程仓库，第一次推送的话，需要输入账户密码(myproject) F:\workspace\python\saas>git push origin master
+  # 给仓库路径添加别名(myproject) F:\workspace\python\saas>git remote add origin https://gitee.com/mindcons/saas_codereview.git
+  
+  # 推送到远程仓库，第一次推送的话，需要输入账户密码(myproject) F:\workspace\python\saas>git push origin master
   ```
 
   第一次提交需要输入账号密码，账号只能是邮箱账号。windows可在：“控制面板\所有控制面板项\凭据管理器”路径下管理账号密码；
-
+  
   我的gitee地址：[点击查看](https://gitee.com/mindcons/saas_codereview)
+  
+- 使用bat管理git命令
+
+  ```bat
+  @echo off
+  
+  echo git add .
+  git add .
+  
+  echo git commit -m 'auto-push'
+  git commit -m 'auto-push'
+  
+  git push
+  echo 'git push finish!'
+  pause
+  ```
+
+  
 
 #### 4.3.测试人员拿代码
 
@@ -312,7 +370,12 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 #### 2.gitignore的作用？
 
 ```
-git软件，本地进行版本管理的时候，需要忽略的文件	git init    git add .    git commit -m up码云/github/gitlab	代码托管
+git软件，本地进行版本管理的时候，需要忽略的文件	
+git init    
+git add .    
+git commit -m up
+码云/github/gitlab	
+代码托管
 ```
 
 #### 3.虚拟环境的作用？
@@ -330,7 +393,17 @@ asgiref==3.3.4Django==1.11.28pytz==2021.1sqlparse==0.4.1typing-extensions==3.10.
 其他人员从gitee上拉取代码后，，进入到项目根目录，执行`pip install -r requirements.txt`，可快速搭建开发环境
 
 ```
-(venv) F:\workspace\test\saas_codereview>pip install -r requirements.txt    Requirement already satisfied: asgiref==3.3.4 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 1)) (3.3.4)        Requirement already satisfied: Django==1.11.28 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 2)) (1.11.28)        Requirement already satisfied: pytz==2021.1 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 3)) (2021.1)        Requirement already satisfied: sqlparse==0.4.1 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 4)) (0.4.1)        Requirement already satisfied: typing-extensions==3.10.0.0 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 5)) (3.10.0.0)
+(venv) F:\workspace\test\saas_codereview>pip install -r requirements.txt    
+
+Requirement already satisfied: asgiref==3.3.4 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 1)) (3.3.4)       
+
+Requirement already satisfied: Django==1.11.28 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 2)) (1.11.28)        
+
+Requirement already satisfied: pytz==2021.1 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 3)) (2021.1)        
+
+Requirement already satisfied: sqlparse==0.4.1 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 4)) (0.4.1)        
+
+Requirement already satisfied: typing-extensions==3.10.0.0 in f:\workspace\python\test3\venv\lib\site-packages (from -r requirements.txt (line 5)) (3.10.0.0)
 ```
 
 ### 今日概要
@@ -393,7 +466,55 @@ pip install qcloudsms_py
 第二步：基于SDK，封装方法，发送短信
 
 ```python
-#!/usr/bin/env python# -*- coding:utf-8 -*-# 使用腾讯云平台发送短信import sslssl._create_default_https_context = ssl._create_unverified_contextfrom qcloudsms_py import SmsMultiSender, SmsSingleSenderfrom qcloudsms_py.httpclient import HTTPErrorfrom django.conf import settingsdef send_sms_single(phone_num, template_id, template_param_list):    """    单条发送短信    :param phone_num: 手机号    :param template_id: 腾讯云短信模板ID    :param template_param_list: 短信模板所需参数列表，例如:【验证码：{1}，描述：{2}】，则传递参数 [888,666]按顺序去格式化模板    :return:    """    appid = settings.TENCENT_SMS_APP_ID    appkey = settings.TENCENT_SMS_APP_KEY    sms_sign = settings.TENCENT_SMS_SIGN    sender = SmsSingleSender(appid, appkey)    try:        response = sender.send_with_param(86, phone_num, template_id, template_param_list, sign=sms_sign)    except HTTPError as e:        response = {'result': 1000, 'errmsg': "网络异常发送失败"}    return responsedef send_sms_multi(phone_num_list, template_id, param_list):    """    批量发送短信    :param phone_num_list:手机号列表    :param template_id:腾讯云短信模板ID    :param param_list:短信模板所需参数列表，例如:【验证码：{1}，描述：{2}】，则传递参数 [888,666]按顺序去格式化模板    :return:    """    appid = settings.TENCENT_SMS_APP_ID    appkey = settings.TENCENT_SMS_APP_KEY    sms_sign = settings.TENCENT_SMS_SIGN    sender = SmsMultiSender(appid, appkey)    try:        response = sender.send_with_param(86, phone_num_list, template_id, param_list, sign=sms_sign)    except HTTPError as e:        response = {'result': 1000, 'errmsg': "网络异常发送失败"}    return response
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
+from qcloudsms_py import SmsMultiSender, SmsSingleSender
+from qcloudsms_py.httpclient import HTTPError
+
+from django.conf import settings
+
+
+def send_sms_single(phone_num, template_id, template_param_list):
+    """
+    单条发送短信
+    :param phone_num: 手机号
+    :param template_id: 腾讯云短信模板ID
+    :param template_param_list: 短信模板所需参数列表，例如:【验证码：{1}，描述：{2}】，则传递参数 [888,666]按顺序去格式化模板
+    :return:
+    """
+    appid = settings.TENCENT_SMS_APP_ID
+    appkey = settings.TENCENT_SMS_APP_KEY
+    sms_sign = settings.TENCENT_SMS_SIGN
+    sender = SmsSingleSender(appid, appkey)
+    try:
+        response = sender.send_with_param(86, phone_num, template_id, template_param_list, sign=sms_sign)
+    except HTTPError as e:
+        response = {'result': 1000, 'errmsg': "网络异常发送失败"}
+    return response
+
+
+def send_sms_multi(phone_num_list, template_id, param_list):
+    """
+    批量发送短信
+    :param phone_num_list:手机号列表
+    :param template_id:腾讯云短信模板ID
+    :param param_list:短信模板所需参数列表，例如:【验证码：{1}，描述：{2}】，则传递参数 [888,666]按顺序去格式化模板
+    :return:
+    """
+    appid = settings.TENCENT_SMS_APP_ID
+    appkey = settings.TENCENT_SMS_APP_KEY
+    sms_sign = settings.TENCENT_SMS_SIGN
+
+    sender = SmsMultiSender(appid, appkey)
+    try:
+        response = sender.send_with_param(86, phone_num_list, template_id, param_list, sign=sms_sign)
+    except HTTPError as e:
+        response = {'result': 1000, 'errmsg': "网络异常发送失败"}
+    return response
 ```
 
 在saas根目录中，运行`manage.py runserver 8000`，将在本地启动服务`127.0.0.1:8000`

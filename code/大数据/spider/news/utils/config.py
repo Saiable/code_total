@@ -24,3 +24,4 @@ REDIS_CONFIGL = {
     'decode_responses': True, # 编码为utf-8
 }
 
+

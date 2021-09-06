@@ -43,7 +43,8 @@
 - [Java]()
 ### 后端框架
 - [Django3.6](https://gitee.com/mindcons/code_total/blob/master/md_doc/django3.6FAQ.md)  |  [数据结构]()  |  [Watchman](https://gitee.com/mindcons/code_total/blob/master/md_doc/Watchman.md)
-  - [练手_Django_轻量级bug管理平台](https://gitee.com/mindcons/code_total/blob/master/md_doc/django_bug管理平台.md)
+  - [练手_Django_轻量级bug管理平台](https://gitee.com/mindcons/code_total/blob/master/md_doc/django/django_bug管理平台.md)
+    - 
 - [FastAPI]()
 - [RPC]()
 
