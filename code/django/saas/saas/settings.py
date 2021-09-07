@@ -131,6 +131,7 @@ TENCENT_SMS_APP_ID = 666
 TENCENT_SMS_APP_KEY = "666"
 # 腾讯云短信签名内容
 TENCENT_SMS_SIGN = "python之路"
+
 try:
     from .local_settings import *
 except ImportError as err:
