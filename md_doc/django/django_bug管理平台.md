@@ -557,7 +557,22 @@ def send_sms_multi(phone_num_list, template_id, param_list):
 - saas/saas/settings.py添加的内容
 
   ```python
-  # 短信的配置# 腾讯云短信应用的app_idTENCENT_SMS_APP_ID = 111111# 腾讯云短信的app_keyTENCENT_SMS_APP_KEY = "111111"# 腾讯云短信的签名内容TENCENT_SMS_SIGN = "aaaaaa"# 配置短信模板TENCENT_SMS_TEMPLATE = {	'register' : 832736,	'login' : 840501,	'reset_password' : 1005457}try:	from .local_settings import *except ImportError:	pass
+  # 短信的配置# 腾讯云短信应用的app_id
+  TENCENT_SMS_APP_ID = 111111
+  # 腾讯云短信的app_key
+  TENCENT_SMS_APP_KEY = "111111"
+  # 腾讯云短信的签名内容
+  TENCENT_SMS_SIGN = "aaaaaa"
+  # 配置短信模板
+  TENCENT_SMS_TEMPLATE = {	
+      'register' : 832736,	
+      'login' : 840501,	
+      'reset_password' : 1005457
+  }
+  try:	
+      from .local_settings import *
+  except ImportError:	
+      pass
   ```
 
 #### 1.2华为云短信
@@ -573,13 +588,30 @@ def send_sms_multi(phone_num_list, template_id, param_list):
 #### 2.1.在model.py创建表
 
 ```python
-from django.db import models# Create your models here.class UserInfo(models.Model):    username = models.CharField(verbose_name = "用户名", max_length = 32)    # EmailField在数据库中，存储的实际还是字符串，区别在于ModelForm在页面上做展示的时候    email = models.EmailField(verbose_name = "邮箱", max_length = 32)    mobile_phone = models.CharField(verbose_name = "手机号", max_length = 32)    password = models.CharField(verbose_name = "密码", max_length = 32)
+from django.db import models
+# Create your models here.
+class UserInfo(models.Model):    
+    username = models.CharField(verbose_name = "用户名", max_length = 32)    
+    # EmailField在数据库中，存储的实际还是字符串，区别在于ModelForm在页面上做展示的时候    
+    email = models.EmailField(verbose_name = "邮箱", max_len
+gth = 32)    
+    mobile_phone = models.CharField(verbose_name = "手机号", max_length = 32)    
+    password = models.CharField(verbose_name = "密码", max_length = 32)
 ```
 
 #### 2.2.settings.py中挂载app01
 
 ```python
-INSTALLED_APPS = [    'django.contrib.admin',    'django.contrib.auth',    'django.contrib.contenttypes',    'django.contrib.sessions',    'django.contrib.messages',    'django.contrib.staticfiles',    # 挂载app01	'app01.apps.App01Config',]
+INSTALLED_APPS = [    
+    'django.contrib.admin',    
+    'django.contrib.auth',    
+    'django.contrib.contenttypes',    
+    'django.contrib.sessions',    
+    'django.contrib.messages',    
+    'django.contrib.staticfiles',    
+    # 挂载app01	
+    'app01.apps.App01Config',
+]
 ```
 
 #### 2.3.数据库迁移，生成表
@@ -601,13 +633,29 @@ django中执行`python manage.py migrate`，底层发生了什么？
 - saas/saas/urls.py中新增
 
 ```python
-# 创建注册功能的路由url(r'^app01/register/', views.register)
+# 创建注册功能的路由
+url(r'^app01/register/', views.register)
 ```
 
 - saas/app01/views.py中新增
 
 ```python
-# 引入ModelForm模块from django import formsfrom app01 import models# 自定义注册model类class RegisterModeForm(forms.ModelForm):	class Meta:		model = models.UserInfo		fields = '__all__'# 注册功能对应的视图函数def register(request):	# 生成model字段	form = RegisterModeForm()	# 根据模板，渲染注册功能的model字段	return render(request, 'register.html', {'form':form})
+# 引入ModelForm模块
+from django import forms
+from app01 import models
+
+# 自定义注册model类
+class RegisterModeForm(forms.ModelForm):	
+    class Meta:		
+        model = models.UserInfo		
+        fields = '__all__'
+    
+    # 注册功能对应的视图函数
+    def register(request):	
+        # 生成model字段	
+        form = RegisterModeForm()	
+        # 根据模板，渲染注册功能的model字段	
+        return render(request, 'register.html', {'form':form})
 ```
 
 #### 2.5.创建模板
@@ -618,7 +666,21 @@ django中执行`python manage.py migrate`，底层发生了什么？
 saas/app01/templates/register.html
 
 ```html
-<!DOCTYPE html><html>	<head>		<meta charset="utf-8">		<title>注册</title>	</head>	<body>		<h1>注册</h1>		<!-- 对form字段进行循环，然后展示，类似于vue中的v-for -->		{% for field in form%}			<!-- ModelForm的字段有哪些属性？ -->			<!-- .label获取的实际上就是verbose_name -->			<p>{{field.label}} : {{ field }}</p>		{% endfor %}			</body></html
+<!DOCTYPE html><html>	
+    <head>		
+        <meta charset="utf-8">		
+        <title>注册</title>	
+    </head>	
+    <body>		
+        <h1>注册</h1>		
+        <!-- 对form字段进行循环，然后展示，类似于vue中的v-for -->		
+        {% for field in form%}			
+        <!-- ModelForm的字段有哪些属性？ -->			
+        <!-- .label获取的实际上就是verbose_name -->			
+        <p>{{field.label}} : {{ field }}</p>		
+        {% endfor %}			
+    </body>
+</html
 ```
 
 #### 2.6.结果
@@ -658,7 +720,8 @@ saas/app01/templates/register.html
 - 定义`验证码`字段
 
   ```python
-  # 验证码# 如果不加widget，默认生成的是input标签code = forms.CharField(label = '验证码')
+  # 验证码# 如果不加widget，默认生成的是input标签
+  code = forms.CharField(label = '验证码')
   ```
 
 #### 2.8.基于bootstrap美化页面
@@ -915,15 +978,17 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
     - 使用模块【不推荐】
 
       ```python
-      import redisconn = redis.Redis(host='127.0.0.1',port='6379',password='foobared',encoding='utf-8')
+      import redis
+      
+      conn = redis.Redis(host='127.0.0.1',port='6379',password='foobared',encoding='utf-8')
       # 设置k1的值为v1，过期时间为10秒
       conn.set('k1','v1',ex=10)
       value = conn.get('k1')
       print(value)
       ```
-    
-    - 上面的python操作redis示例，是以直接创建连接的方式实现，每次操作redis如果重新连接一次，效率会比较低，建议使用redis连接池来替换【推荐】，例如：
 
+    - 上面的python操作redis示例，是以直接创建连接的方式实现，每次操作redis如果重新连接一次，效率会比较低，建议使用redis连接池来替换【推荐】，例如：
+    
       ```python
       import redis
       #创建redis连接池（默认连接池最大连接数 2**31=2147483648）
@@ -935,7 +1000,7 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
       #根据键获取值，如果值存在，获取到的是字符串类型；不存在则返回None
       value = conn.get('k1')print(value)
       ```
-    
+
       ```python
       # 在django中使用
       import redis
@@ -1024,10 +1089,10 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
   django-admin startapp web
   ```
 
-- 在`settinsg.py`最后一行中注册
+- 在`settinsg.py`的`INSTALLED_APPS`最后一行中注册
 
   ```python
-  INSTALLED_APPS = [    'django.contrib.admin',    'django.contrib.auth',    'django.contrib.contenttypes',    'django.contrib.sessions',    'django.contrib.messages',    'django.contrib.staticfiles',	'app01.apps.App01Config',	'web.apps.WebConfig',]
+  'web.apps.WebConfig',
   ```
 
 - 删除web/views.py，创建views文件夹，创建web/views/account.py文件
@@ -1042,9 +1107,55 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
   basic.html
 
   ```html
-  {% load static %}<!DOCTYPE html><html>	<head>		<meta charset="utf-8">		<title>{% block title%}{% endblock %}</title>		<link rel="stylesheet" href="{% static 'plugin/bootstrap-3.4.1-dist/css/bootstrap.min.css' %}">		<link rel="stylesheet" href="{% static 'plugin/fontawesome-free-5.11.2-web/css/fontawesome.min.css' %}">		<style>			.navbar-default{				border-radius: 0;			}		</style>		{% block css %}{% endblock %}	</head>	<body>				<nav class="navbar navbar-default">		  <div class="container">		    <!-- Brand and toggle get grouped for better mobile display -->		    <div class="navbar-header">		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">		        <span class="sr-only">Toggle navigation</span>		        <span class="icon-bar"></span>		        <span class="icon-bar"></span>		        <span class="icon-bar"></span>		      </button>		      <a class="navbar-brand" href="#">Tracer</a>		    </div>				    <!-- Collect the nav links, forms, and other content for toggling -->		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">		      <ul class="nav navbar-nav">		        <!-- <li class="active"><a href="#">产品功能 <span class="sr-only">(current)</span></a></li> -->		        <li><a href="#">产品功能</a></li>		        <li><a href="#">企业方案</a></li>		        <li><a href="#">帮助文档</a></li>		        <li><a href="#">价格</a></li>		      		      </ul>		      		      <ul class="nav navbar-nav navbar-right">		        <li><a href="#">Link</a></li>		        <li class="dropdown">		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>		          <ul class="dropdown-menu">		            <li><a href="#">Action</a></li>		            <li><a href="#">Another action</a></li>		            <li><a href="#">Something else here</a></li>		            <li role="separator" class="divider"></li>		            <li><a href="#">Separated link</a></li>		          </ul>		        </li>		      </ul>		    </div><!-- /.navbar-collapse -->		  </div><!-- /.container-fluid -->		</nav>		{% block content %}{% endblock %}				<script src="{% static 'js/jquery-3.6.0.min.js'%}"></script>		<script src="{% static 'plugin/bootstrap-3.4.1-dist/js/bootstrap.min.js'%}"></script>		{% block js %}{% endblock %}	</body></html>
+  {% load static %}<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <title>{% block title %}{% endblock %}</title>
+      <link rel="stylesheet" href="{% static 'plugin/bootstrap-3.4.1-dist/css/bootstrap.min.css' %}">
+      <link rel="stylesheet" href="{% static 'plugin/fontawesome-free-5.11.2-web/css/fontawesome.min.css' %}">
+      <style>            .navbar-default {
+          border-radius: 0;
+      }        </style>
+      {% block css %}{% endblock %}    </head>
+  <body>
+  <nav class="navbar navbar-default">
+      <div class="container">            <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                      data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+              <a class="navbar-brand" href="#">Tracer</a></div>
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                  <!-- <li class="active"><a href="#">产品功能 <span class="sr-only">(current)</span></a></li> -->
+                  <li><a href="#">产品功能</a></li>
+                  <li><a href="#">企业方案</a></li>
+                  <li><a href="#">帮助文档</a></li>
+                  <li><a href="#">价格</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                  <li><a href="#">Link</a></li>
+                  <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                          aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                          <li><a href="#">Action</a></li>
+                          <li><a href="#">Another action</a></li>
+                          <li><a href="#">Something else here</a></li>
+                          <li role="separator" class="divider"></li>
+                          <li><a href="#">Separated link</a></li>
+                      </ul>
+                  </li>
+              </ul>
+          </div><!-- /.navbar-collapse -->          </div><!-- /.container-fluid -->        </nav>
+  {% block content %}{% endblock %}
+  <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+  <script src="{% static 'plugin/bootstrap-3.4.1-dist/js/bootstrap.min.js' %}"></script>
+  {% block js %}{% endblock %}    </body>
+  </html>
   ```
-
+  
   
 
 ##### 1.1.2.路由分发
