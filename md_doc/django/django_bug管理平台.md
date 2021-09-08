@@ -665,18 +665,25 @@ saas/app01/templates/register.html
 
 这是使用v3版本，[bootstrap-v3版本下载](https://v3.bootcss.com/getting-started/#download)
 
-也可以直接使用官网提供的cdn，引入方式如下：
-
-```html
-<!-- 最新版本的 Bootstrap 核心 CSS 文件 --><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous"><!-- 可选的 Bootstrap 主题文件（一般不用引入） --><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous"><!-- 最新的 Bootstrap 核心 JavaScript 文件 --><script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
-```
+也可以直接使用官网提供的cdn.
 
 也可以下载，然后在django本地引入，具体原理查看，[django项目如何引入css文件](https://www.py.cn/kuangjia/django/11612.html)、具体配置见[Django使用本地css/js文件](https://www.cnblogs.com/lizm166/p/9414156.html)
 
 settings.py中的测试代码
 
 ```
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)# 这里打印的就是项目文件所在的绝对路径BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))# print(BASE_DIR) F:\workspace\py_virtualenv\myproject\Scripts\saas# 基于BASE_DIR构建static路径STATIC_ROOT= os.path.join(BASE_DIR,'static')# print(STATIC_ROOT) F:\workspace\py_virtualenv\myproject\Scripts\saas\static# 追加css文件路径STATICFILES_DIRS=[os.path.join(STATIC_ROOT,'css'),]# print(STATICFILES_DIRS) ['F:\\workspace\\py_virtualenv\\myproject\\Scripts\\saas\\static\\css']
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# 这里打印的就是项目文件所在的绝对路径BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# print(BASE_DIR) F:\workspace\py_virtualenv\myproject\Scripts\saas
+
+# 基于BASE_DIR构建static路径STATIC_ROOT= os.path.join(BASE_DIR,'static')# print(STATIC_ROOT) 
+
+F:\workspace\py_virtualenv\myproject\Scripts\saas\static
+
+# 追加css文件路径STATICFILES_DIRS=[os.path.join(STATIC_ROOT,'css'),]
+
+# print(STATICFILES_DIRS) ['F:\\workspace\\py_virtualenv\\myproject\\Scripts\\saas\\static\\css']
 ```
 
 - 实际配置
@@ -686,7 +693,7 @@ settings.py中的测试代码
   - settinsg.py中，在`STATIC_URL`下面，配置
 
     ```python
-    STATICFILES_DIRS = [    os.path.join(BASE_DIR, 'static/'),]
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/'),]
     ```
 
     然后再register.html末班中，使用相对路径访问
@@ -703,47 +710,117 @@ settings.py中的测试代码
 
   ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210624061226608.png)- 
 
+- 以上引入静态文件的方式不可取
+
+  - `register.html`
+  
+    ```html
+    {% load static %}
+    
+    ...
+    
+    <link rel="stylesheet" href="{% static 'app01/static/css/account.css' %}">
+    
+    ```
+  
+    
+  
 - 完善register.html中的登录界面代码
 
   ```html
-  		<div class="account">			<h1>注册</h1>			<form>				{% for field in form%}				<div class="form-group">					<label for="{{field.id_for_label}}">{{field.label}}</label>					<!-- <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email"> -->					{{ field }}				</div>				{% endfor %}				<button type="submit" class="btn btn-default">注册</button>			</form>		</div>
+  <div class="account">
+      <h1>注册</h1>
+      <form>
+          {% for field in form %}
+          <div class="form-group">
+              <label for="{{ filed.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+          </div>
+          {% endfor %}
+  
+          <button type="submit" class="btn btn-default">注 册</button>
+      </form>
+  </div>
   ```
-
+  
   此时`field`的字段是没有`form-control`的类名的，要借助ModelForm中的`attrs`，重写字段时，给每个字段加上类名
 
   ```python
   confirm_password = forms.CharField(label = '重复密码', widget = forms.PasswordInput(attrs = {'class' : 'form-control', 'placeholder' : '请重复输入密码'}))
   ```
-
+  
   ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210624063221205.png)
 
   重写`RegisterModelForm`的初始化方法，批量给字段添加`form-control`类属性以及`placeholder`属性
 
   ```python
-  def __init__(self, *args,**kwargs):    super().__init__(*args, **kwargs)    for name, field in self.fields.items():        field.widget.attrs['class'] = 'form-control'        field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
+      def __init__(self,*args,**kwargs):
+          super().__init__(*args,**kwargs)
+          for name,field in self.fields.items():
+              field.widget.attrs['class'] = 'form-control'
+              field.widget.attrs['placeholder'] = '请输入{0}'.format(field.label)
   ```
-
+  
   自定义字段顺序
-
+  
   ```python
-  # fields = "__all__"fields = ['username','email','password','confirm_password','mobile_phone','code']
+  # fields = "__all__"
+  fields = ['username','email','password','confirm_password','mobile_phone','code']
   ```
-
-  完善register模板样式
-
+  
+  完善register模板
+  
   ```html
-  <div class="account">	<h1 style="text-align: center;">注册</h1>	<form>		{% for field in form%}			{%if field.name == 'code'%}				<div class="form-group">					<label for="{{field.id_for_label}}">{{field.label}}</label>					<div class="clearfix">						<div class="col-md-6" style="padding-left: 0;">{{ field }}</div>						<div class="col-md-6">							<button type="button" class="btn btn-default" value="点击获取验证码">点击获取验证码</button>						</div>					</div>				</div>			{%else%}				<div class="form-group">					<label for="{{field.id_for_label}}">{{field.label}}</label>					{{ field }}				</div>			{%endif%}		{% endfor %}		<button type="submit" class="btn btn-primary">注册</button>	</form></div>
+  <div class="account">
+      <h1 style="text-align: center">注册</h1>
+      <form>
+          {% for field in form %}
+          {% if field.name == 'code' %}
+          <div class="form-group">
+              <label for="{{ filed.id_for_label }}">{{ field.label }}</label>
+              <div class="clearfix">
+                  <div class="col-md-6" style="padding-left: 0;">{{ field }}</div>
+                  <div class="col-md-6">
+                      <input type="button" class="btn btn-default" value="点击获取验证码">
+                  </div>
+              </div>
+          </div>
+          {% else %}
+          <div class="form-group">
+              <label for="{{ filed.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+          </div>
+          {% endif %}
+          {% endfor %}
+          <button type="submit" class="btn btn-primary">注 册</button>
+      </form>
+  </div>
   ```
+  
+  account.css
+  
+  ```css
+  .account{
+      width: 400px;
+      margin: 0 auto;
+  }
+  ```
+  
+  
 
 ### 3.注册实现思路
 
 - 点击获取验证
   - 获取手机号
   - 向后台发送ajax
-  - 向手机发送验证码
-  - 验证码失效处理
+    - 手机
+    - tpl=register
+  - 向手机发送验证码（ajax/sms/redis）
+  - 验证码失效处理（60s）
 
 #### 3.1.windows安装redis
+
+补充：可直接看我的redis基础，部署在linux上进行访问
 
 - 安装redis
 
@@ -838,43 +915,95 @@ settings.py中的测试代码
     - 使用模块【不推荐】
 
       ```python
-      import redisconn = redis.Redis(host='127.0.0.1',port='6379',password='foobared',encoding='utf-8')# 设置k1的值为v1，过期时间为10秒conn.set('k1','v1',ex=10)value = conn.get('k1')print(value)
+      import redisconn = redis.Redis(host='127.0.0.1',port='6379',password='foobared',encoding='utf-8')
+      # 设置k1的值为v1，过期时间为10秒
+      conn.set('k1','v1',ex=10)
+      value = conn.get('k1')
+      print(value)
       ```
-
+    
     - 上面的python操作redis示例，是以直接创建连接的方式实现，每次操作redis如果重新连接一次，效率会比较低，建议使用redis连接池来替换【推荐】，例如：
 
       ```python
-      import redis#创建redis连接池（默认连接池最大连接数 2**31=2147483648）pool = redis.ConnectionPool(host='127.0.0.1',port=6379,password='foobared',encoding='utf-8',max_connections=1000)#去连接池中获取一个连接conn = redis.Redis(connection_pool = pool)#设置键值，且超时时间为10秒（写入redis时，会自动转换为字符串）conn.set('k1','v1',ex=10)#根据键获取值，如果值存在，获取到的是字符串类型；不存在则返回Nonevalue = conn.get('k1')print(value)
+      import redis
+      #创建redis连接池（默认连接池最大连接数 2**31=2147483648）
+      pool = redis.ConnectionPool(host='127.0.0.1',port=6379,password='foobared',encoding='utf-8',max_connections=1000)
+      #去连接池中获取一个连接
+      conn = redis.Redis(connection_pool = pool)
+      #设置键值，且超时时间为10秒（写入redis时，会自动转换为字符串）
+      conn.set('k1','v1',ex=10)
+      #根据键获取值，如果值存在，获取到的是字符串类型；不存在则返回None
+      value = conn.get('k1')print(value)
       ```
-
+    
       ```python
-      # 在django中使用import redisfrom django.shortcuts import HttpResponse#创建redis连接池（默认连接池最大连接数 2**31=2147483648）pool = redis.ConnectionPool(host='127.0.0.1',port=6379,password='foobared',encoding='utf-8',max_connections=1000)def index(request):    #去连接池中获取一个连接    conn = redis.Redis(connection_pool = pool)    #设置键值，且超时时间为10秒（写入redis时，会自动转换为字符串）    conn.set('k1','v1',ex=10)    #根据键获取值，如果值存在，获取到的是字符串类型；不存在则返回None    value = conn.get('k1')    print(value)        return HttpResponse('ok')
+      # 在django中使用
+      import redis
+      from django.shortcuts import HttpResponse
+      #创建redis连接池（默认连接池最大连接数 2**31=2147483648）
+      pool = redis.ConnectionPool(host='127.0.0.1',port=6379,password='foobared',encoding='utf-8',max_connections=1000)
+      def index(request):    
+          #去连接池中获取一个连接    
+          conn = redis.Redis(connection_pool = pool)    
+          #设置键值，且超时时间为10秒（写入redis时，会自动转换为字符串）    
+          conn.set('k1','v1',ex=10)    
+          #根据键获取值，如果值存在，获取到的是字符串类型；不存在则返回None    
+          value = conn.get('k1')    
+          print(value)        
+          return HttpResponse('ok')
       ```
-
+    
       这种方式可以实现在django中操作redis，但是，这种形式有点非主流，一般不这么干，而是采用一种更简洁的方式。
-
+    
     - django连接redis，django-redis
-
+    
       - 在django中`方便的`使用redis
-
+    
         ```python
         不方便：redis模块+连接池方便：django-redis
         ```
-
-      - 安装`django-redis`
-
+    
+      - 安装`django-redis`，注意版本，不能直接安装django-redis，默认是安装最新的django-redis，导致升级django版本
+    
         ```python
-        pip install django-redis
+        pip install django-redis==4.0.0
         ```
-
-      - local_settings.py配置：
-
+    
+      - `local_settings.py`配置：
+    
         ```python
-        # django-redis的配置CACHES = {	"default": {		"BACKEND": "django_redis.cache.RedisCache",		"LOCATION": "redis://127.0.0.1:6379", # 安装redis的主机的IP和端口		"OPTIONS": {			"CLIENT_CLASS": "django_redis.client.DefaultClient",			"CONNECTION_POOL_KWARGS": {				"max_connections": 1000,				"encoding": "utf-8"			},			"PASSWORD": "foorbared" # redis密码，放在local_settings.py中		}	},}
+        # django-redis的配置
+        CACHES = {	
+            "default": {		
+                "BACKEND": "django_redis.cache.RedisCache",		
+                "LOCATION": "redis://127.0.0.1:6379", 
+                # 安装redis的主机的IP和端口		
+                "OPTIONS": {			
+                    "CLIENT_CLASS": "django_redis.client.DefaultClient",			
+                    "CONNECTION_POOL_KWARGS": {				
+                        "max_connections": 1000,				
+                        "encoding": "utf-8"			
+                    },			
+                    "PASSWORD": "foorbared" # redis密码，放在local_settings.py中		
+                }	
+        	},
+        }
         ```
-
+        
         ```python
-        # 链接到数据库from django.shortcuts import HttpResponsefrom django_redis import get_redis_connectiondef index(request):    #去连接池中获取一个连接    conn = get_redis_connection("defalut") # 默认读取defalut的配置，也可以读取其他的，比如master的配置，在settings.py中配置好即可    # 后期读写分离的时候可以用到        conn.set('k1','v1',ex=10)    value = conn.get('k1')    print(value)        return HttpResponse('ok')
+        # 链接到数据库
+        from django.shortcuts import HttpResponse
+        from django_redis import get_redis_connection
+        
+        def index(request):    
+            #去连接池中获取一个连接    
+            conn = get_redis_connection("defalut") 
+            # 默认读取defalut的配置，也可以读取其他的，比如master的配置，在settings.py中配置好即可    
+            # 后期读写分离的时候可以用到        
+            conn.set('k1','v1',ex=10)    
+            value = conn.get('k1')    
+            print(value)        
+            return HttpResponse('ok')
         ```
 
 ### 今日概要
