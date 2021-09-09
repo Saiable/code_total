@@ -696,7 +696,17 @@ saas/app01/templates/register.html
   vies.py
 
   ```python
-  # 导入django中正则的模块from django.core.validators import RegexValidatorfrom django.core.exceptions import ValidationErrorclass RegisterModeForm(forms.ModelForm):	# 变量名要和model中的保持一致	# validator中，可以放一个或多个正则表达式	# RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息	mobile_phone = forms.CharField(label = '手机号', validators = [RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])	class Meta:		model = models.UserInfo		fields = "__all__"
+  # 导入django中正则的模块
+  from django.core.validators import RegexValidator
+  from django.core.exceptions import ValidationError
+  class RegisterModeForm(forms.ModelForm):	
+      # 变量名要和model中的保持一致	
+      # validator中，可以放一个或多个正则表达式	
+      # RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息	
+      mobile_phone = forms.CharField(label = '手机号', validators = [RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])	
+      class Meta:		
+          model = models.UserInfo		
+          fields = "__all__"
   ```
 
 - 重写`密码`字段
@@ -1112,47 +1122,61 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
   <head>
       <meta charset="utf-8">
       <title>{% block title %}{% endblock %}</title>
-      <link rel="stylesheet" href="{% static 'plugin/bootstrap-3.4.1-dist/css/bootstrap.min.css' %}">
-      <link rel="stylesheet" href="{% static 'plugin/fontawesome-free-5.11.2-web/css/fontawesome.min.css' %}">
-      <style>            .navbar-default {
-          border-radius: 0;
-      }        </style>
-      {% block css %}{% endblock %}    </head>
+  
+      <link rel="stylesheet" href="{% static '/web/plugin/bootstrap/css/bootstrap.min.css' %}">
+      <link rel="stylesheet" href="{% static '/web/plugin/font-awesome/css/font-awesome.min.css' %}">
+  
+      <style>
+          .navbar-default {
+              border-radius: 0;
+          }
+      </style>
+  
+      {% block css %}{% endblock %}
+  </head>
+  
   <body>
-  <nav class="navbar navbar-default">
-      <div class="container">            <!-- Brand and toggle get grouped for better mobile display -->
-          <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                      data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
-              <a class="navbar-brand" href="#">Tracer</a></div>
-          <!-- Collect the nav links, forms, and other content for toggling -->
-          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-              <ul class="nav navbar-nav">
-                  <!-- <li class="active"><a href="#">产品功能 <span class="sr-only">(current)</span></a></li> -->
-                  <li><a href="#">产品功能</a></li>
-                  <li><a href="#">企业方案</a></li>
-                  <li><a href="#">帮助文档</a></li>
-                  <li><a href="#">价格</a></li>
-              </ul>
-              <ul class="nav navbar-nav navbar-right">
-                  <li><a href="#">Link</a></li>
-                  <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
-                                          aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                      <ul class="dropdown-menu">
-                          <li><a href="#">Action</a></li>
-                          <li><a href="#">Another action</a></li>
-                          <li><a href="#">Something else here</a></li>
-                          <li role="separator" class="divider"></li>
-                          <li><a href="#">Separated link</a></li>
-                      </ul>
-                  </li>
-              </ul>
-          </div><!-- /.navbar-collapse -->          </div><!-- /.container-fluid -->        </nav>
+      <nav class="navbar navbar-default">
+          <div class="container">            <!-- Brand and toggle get grouped for better mobile display -->
+              <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                          data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+                  <a class="navbar-brand" href="#">Tracer</a></div>
+              <!-- Collect the nav links, forms, and other content for toggling -->
+              <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                  <ul class="nav navbar-nav">
+                      <!-- <li class="active"><a href="#">产品功能 <span class="sr-only">(current)</span></a></li> -->
+                      <li><a href="#">产品功能</a></li>
+                      <li><a href="#">企业方案</a></li>
+                      <li><a href="#">帮助文档</a></li>
+                      <li><a href="#">价格</a></li>
+                  </ul>
+                  <ul class="nav navbar-nav navbar-right">
+                      <li><a href="#">Link</a></li>
+                      <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                              aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                          <ul class="dropdown-menu">
+                              <li><a href="#">Action</a></li>
+                              <li><a href="#">Another action</a></li>
+                              <li><a href="#">Something else here</a></li>
+                              <li role="separator" class="divider"></li>
+                              <li><a href="#">Separated link</a></li>
+                          </ul>
+                      </li>
+                  </ul>
+              </div><!-- /.navbar-collapse -->
+          </div><!-- /.container-fluid -->
+      </nav>
+  
   {% block content %}{% endblock %}
-  <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-  <script src="{% static 'plugin/bootstrap-3.4.1-dist/js/bootstrap.min.js' %}"></script>
-  {% block js %}{% endblock %}    </body>
+  
+  <script src="{% static '/web/js/jquery-3.4.1.min.js' %}"></script>
+  <script src="{% static '/web/plugin/bootstrap/js/bootstrap.js' %}"></script>
+  
+  {% block js %}{% endblock %}
+  
+  </body>
   </html>
   ```
   
@@ -1165,19 +1189,38 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
 - 总路由saas/urls.py
 
   ```python
-  from django.conf.urls import url,includefrom django.contrib import adminurlpatterns = [    url(r'^admin/', admin.site.urls),    url(r'^app01/', include('app01.urls',namespace='app01')),    url(r'^', include('web.urls',namespace='web')),]
+  from django.conf.urls import url,include
+  from django.contrib import admin
+  
+  urlpatterns = [    
+      url(r'^admin/', admin.site.urls),    
+      url(r'^app01/', include('app01.urls',namespace='app01')),    
+      url(r'^', include('web.urls',namespace='web')),
+  ]
   ```
-
+  
   app01/urls.py
-
+  
   ```python
-  from django.conf.urls import urlfrom django.contrib import adminfrom app01 import viewsurlpatterns = [    url(r'^send/sms/', views.send_sms),    url(r'^register/', views.register, name='register'),]
+  from django.conf.urls import url
+  from django.contrib import admin
+  from app01 import view
+  
+  surlpatterns = [    
+      url(r'^send/sms/', views.send_sms),    
+      url(r'^register/', views.register, name='register'),
+  ]
   ```
-
+  
   web/urls.py
-
+  
   ```python
-  from django.conf.urls import url,includefrom web.views import accounturlpatterns = [    url(r'^register/', account.register, name='register'),]
+  from django.conf.urls import url,include
+  from web.views import account
+  
+  urlpatterns = [    
+      url(r'^register/', account.register, name='register'),
+  ]
   ```
 
 ##### 1.1.3.register.html
@@ -1185,22 +1228,120 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
 - account.css
 
   ```css
-  .account {	width: 400px;	margin-top: 30px;	margin-left: auto;	margin-right: auto;	border: 1px solid #f0f0f0;	padding: 10px 30px 30px 30px;	-webkit-box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);	box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);}.account .title {	font-size: 25px;	font-weight: bold;	text-align: center;}.account .form-group {	margin-bottom: 20px;}
+  .account {
+      width: 400px;
+      margin-top: 30px;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #f0f0f0;
+      padding: 10px 30px 30px 30px;
+      -webkit-box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);
+      box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);
+  }
+  
+  .account .title {
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+  }
+  
+  .account .form-group {
+      margin-bottom: 20px;
+  }
+  
   ```
 
   register.html
 
-  ```python
-  {% extends 'layout/basic.html' %}{% load static %}{% block title %}用户注册{% endblock%}{% block css%}	<link rel="stylesheet" href="{% static 'css/account.css' %}">{% endblock %}{% block content %}    <div class="account">        <div class="title">用户注册</div>        <form id="regForm" method="POST" novalidate>            {% csrf_token %}            {% for field in form %}                {% if field.name == 'code' %}                    <div class="form-group">                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>                        <div class="row">                            <div class="col-xs-7">                                {{ field }}                                <span class="error-msg"></span>                            </div>                            <div class="col-xs-5">                                <input id="btnSms" type="button" class="btn btn-default" value="点击获取验证码">                            </div>                        </div>                    </div>                {% else %}                    <div class="form-group">                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>                        {{ field }}                        <span class="error-msg"></span>                    </div>                {% endif %}            {% endfor %}            <div class="row">                <div class="col-xs-3">                    <input id="btnSubmit" type="button" class="btn btn-primary" value="注  册"/>                </div>            </div>        </form>    </div>{% endblock %}{% block js %}{% endblock%}
+  ```html
+  {% extends 'web/layout/basic.html' %}
+  {% load static %}
+  
+  {% block title %}用户注册{% endblock %}
+  
+  {% block css %}
+      <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
+  {% endblock %}
+  
+  {% block content %}
+      <div class="account">
+          <div class="title">用户注册</div>
+          <form id="regForm" method="POST" novalidate>
+              {% csrf_token %}
+              {% for field in form %}
+              {% if field.name == 'code' %}
+                  <div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      <div class="row">
+                          <div class="col-xs-7">
+                              {{ field }}
+                              <span class="error-msg"></span>
+                          </div>
+                          <div class="col-xs-5">
+                              <input id="btnSms" type="button" class="btn btn-default" value="点击获取验证码">
+                          </div>
+                      </div>
+                  </div>
+              {% else %}
+                  <div class="form-group">
+                      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      {{ field }}
+                      <span class="error-msg"></span>
+                  </div>
+              {% endif %}
+              {% endfor %}
+              <div class="row">
+                  <div class="col-xs-3">
+                      <input id="btnSubmit" type="button" class="btn btn-primary" value="注  册"/>
+                  </div>
+              </div>
+          </form>
+      </div>
+  {% endblock %}
+  
+  {% block js %}
+  
+  {% endblock %}
   ```
+
+  ![在这里插入图片描述](https://img-blog.csdnimg.cn/cde5358aa7344741b337d9d6069bd4d3.png)
 
 - 新建web/forms文件夹，后面用到的Forms，都统一放在该目录
 
   该目录下，新建account.py
 
   ```python
-  # 引入ModelForm模块from django import formsfrom app01 import modelsfrom django.core.validators import RegexValidatorfrom django.core.exceptions import ValidationError# 自定义注册model类class RegisterModeForm(forms.ModelForm):	# 变量名要和model中的保持一致	# validator中，可以放一个或多个正则表达式	# RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息	mobile_phone = forms.CharField(label = '手机号', validators = [RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])		#重写密码字段	password = forms.CharField(label = '密码', widget = forms.PasswordInput())		# 重复密码	confirm_password = forms.CharField(label = '重复密码', widget = forms.PasswordInput())		# 验证码	code = forms.CharField(label = '验证码')		class Meta:		model = models.UserInfo		# fields = "__all__"		fields = ['username','email','password','confirm_password','mobile_phone','code']	def __init__(self, *args,**kwargs):		super().__init__(*args, **kwargs)		for name, field in self.fields.items():			field.widget.attrs['class'] = 'form-control'			field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
+  # 引入ModelForm模块
+  from django import forms
+  from app01 import models
+  from django.core.validators import RegexValidator
+  from django.core.exceptions import ValidationError
+  
+  # 自定义注册model类
+  class RegisterModelForm(forms.ModelForm):
+      # 变量名要和model中的保持一致	
+      # validator中，可以放一个或多个正则表达式	
+      # RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息	
+      mobile_phone = forms.CharField(label='手机号', validators=[
+          RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])
+      # 重写密码字段
+      password = forms.CharField(label='密码', widget=forms.PasswordInput())  # 重复密码
+      confirm_password = forms.CharField(label='重复密码', widget=forms.PasswordInput())
+      # 验证码	
+      code = forms.CharField(label='验证码')
+  
+      class Meta:
+          model = models.UserInfo
+          # fields = "__all__"		
+          fields = ['username', 'email', 'password', 'confirm_password', 'mobile_phone', 'code']
+  
+      def __init__(self, *args, **kwargs):
+          super().__init__(*args, **kwargs)
+          for name, field in self.fields.items():
+              field.widget.attrs['class'] = 'form-control'
+              field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
   ```
+
+  新建web/views文件夹，后面用到的views，都统一放在该目录
 
   views/account.py
 
