@@ -460,8 +460,13 @@ Requirement already satisfied: typing-extensions==3.10.0.0 in f:\workspace\pytho
   TENCENT_SMS_APP_KEY = "666"
   # 腾讯云短信签名内容
   TENCENT_SMS_SIGN = "python之路"
+  
+  TENCENT_SMS_TEMPLATE = {
+      'register': 832736,
+      'login': 840501
+  }
   ```
-
+  
   
 
 ##### 2）qcloudsmsm-py-0.1.4源码解析
@@ -1395,7 +1400,8 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
      $('#btnSms').click(function () {                
          // 获取用户输入的手机号                
          // django 会对由forms生成的字段，加上id_+字段名的id属性                
-         console.log($('#id_mobile_phone').val())            
+         console.log($('#id_mobile_phone').val())
+         var mobilePhone = $('#id_mobile_phone').val()
      })        
  }    
  </script>
@@ -1454,7 +1460,7 @@ class SendSmsForm(forms.Form):
 
 	# 手机号校验的钩子函数
 	def clean_mobile_phone(self):
-		moblie_phone = self.cleaned_data('mobile_phone')
+		mobile_phone = self.cleaned_data('mobile_phone')
 
 		# 判断短信模板是否有问题
 		tpl = self.request.GET.get('tpl')
@@ -1464,10 +1470,10 @@ class SendSmsForm(forms.Form):
 
 		# 检查数据库中，是否有手机号
 		# django的filter方法是从数据库的取得匹配的结果，返回一个对象列表，如果记录不存在的话，它会返回[]。
-		exsits = models.UserInfo.objects.filter(moblie_phone=moblie_phone).exists()
+		exsits = models.UserInfo.objects.filter(mobile_phone=mobile_phone).exists()
 		if exsits:
 			raise ValidationError('手机号已存在')
-		return moblie_phone
+		return mobile_phone
 
 # 自定义注册model类
 class RegisterModeForm(forms.ModelForm):
@@ -1573,10 +1579,57 @@ def send_sms(request):
   return JsonResponse({'status': False},{'errror': form.errors})
   ```
 
-##### 1.2.5.发送成功与失败处理
+##### 1.2.5.验证通过
 
-- 失败，显示错误信息
-- 成功，显示倒计时
+- 发送短信
+- 将短信保存在redis中（60s）
+
+forms/account.py
+
+```python
+import random
+from utils.tencent.sms import send_sms_single
+from django_redis import get_redis_connection
+```
+
+
+
+```python
+        if exsits:
+            raise ValidationError('手机号已存在')
+
+        # 发短信 & 写redis
+        # 发送短信
+        code = random.randrange(1000, 9999)
+        sms = send_sms_single(mobile_phone, template_id, [code, ])
+        if sms['result'] != 0:
+            raise ValidationError('短信验证码发送失败，{}'.format(sms['errmsg']))
+        # 写redis(django-redis)
+        conn = get_redis_connection()
+        conn.set(mobile_phone,code,ex=60)
+
+
+        return mobile_phone
+```
+
+views/account.py
+
+```python
+from django.http import JsonResponse
+```
+
+
+
+```python
+    if form.is_valid():
+        return JsonResponse({'status':True})
+    return JsonResponse({'status':False,'error':form.errors})
+```
+
+##### 1.2.6.成功失败
+
+- 失败，错误信息
+- 成功，倒计时
 
 #### 1.3.点击注册
 

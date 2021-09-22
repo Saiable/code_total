@@ -2,6 +2,7 @@
 from django.shortcuts import render
 from web.forms.account import RegisterModelForm,SendSmsForm
 from django.conf import settings
+from django.http import JsonResponse
 
 
 def register(request):
@@ -19,5 +20,5 @@ def send_sms(request):
     # print(form.is_valid())
     # 只校验手机号不能为空，格式是否正确
     if form.is_valid():
-        pass
-    return HttpResponse('ok')
+        return JsonResponse({'status':True})
+    return JsonResponse({'status':False,'error':form.errors})

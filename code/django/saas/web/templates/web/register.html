@@ -56,7 +56,8 @@
             $('#btnSms').click(function () {
                 // 获取用户输入的手机号
                 // django 会对由forms生成的字段，加上id_+字段名的id属性
-                console.log($('#id_mobile_phone').val())
+                {#console.log($('#id_mobile_phone').val())#}
+                var mobilePhone = $('#id_mobile_phone').val()
                 //发送ajax请求
                 $.ajax({
                     // 反向生成url，等价于send/sms
