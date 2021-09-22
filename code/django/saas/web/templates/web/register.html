@@ -50,7 +50,22 @@
         $(function () {
             bindClickBtnSms()
         })
+        //发送短信倒计时
+        function sendSmsReminder() {
+            var $smsBtn = $('#btnSms')
 
+            $smsBtn.prop('disabled',true)
+
+            var time = 60
+            var remind = setInterval(function () {
+                $smsBtn.val(time+'秒重新发送')
+                time = time - 1
+                if (time < 1){
+                    clearInterval(remind)
+                    $smsBtn.val('点击获取验证码').prop('disabled',false)
+                }
+            },1000)
+        }
         // 绑定获取短信验证码的点击操作
         function bindClickBtnSms() {
             $('#btnSms').click(function () {
@@ -67,13 +82,15 @@
                     // 总路由分发时，加了namspace="web"，反向生成时，要加web:
                     url: "{% url 'web:send_sms' %}",
                     type: "GET",
-                    data: {mobilePhone: mobilePhone, tpl: 'register'},
+                    data: {mobile_phone: mobilePhone, tpl: 'register'},
                     dataType: "JSON", //将服务器返回的数据反序列化为字典
                     success: function (res) {
                         // ajax请求成功后，返回的值存储在res中
                         {#console.log(res)#}
                         if (res.status) {
-                            console.log('发送成功，倒计时')
+                            {#console.log('发送成功，倒计时')#}
+                            sendSmsReminder()
+
                         } else {
                             //错误信息
                             console.log(res) //{status:False,error:{mobile_phone:["错误信息"]}}

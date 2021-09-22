@@ -11,10 +11,10 @@ def register(request):
 
 
 def send_sms(request):
-    mobile_phone = request.GET.get('mobilePhone')
-    tpl = request.GET.get('tpl')
-    template_id = settings.TENCENT_SMS_TEMPLATE[tpl]
-
+    # mobile_phone = request.GET.get('mobilePhone')
+    # tpl = request.GET.get('tpl')
+    # template_id = settings.TENCENT_SMS_TEMPLATE[tpl]
+    print(request.GET)
     # 实例化Form对象，实例化时，会执行该对象的init方法
     form = SendSmsForm(request, data=request.GET)
     # print(form.is_valid())

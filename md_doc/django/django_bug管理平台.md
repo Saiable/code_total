@@ -1417,7 +1417,7 @@ $.ajax({
     // 总路由分发时，加了namspace="web"，反向生成时，要加web:	
     url: "{% url 'web:send_sms' %}",	
     type: 'GET',	
-    data: {mobilePhone:mobilePhone, tpl:'register'},	
+    data: {mobile_phone:mobilePhone, tpl:'register'},	
     success: function(res) {		
         // ajax请求成功后，返回的值存储在res中		
         console.log(res)	
@@ -1460,7 +1460,7 @@ class SendSmsForm(forms.Form):
 
 	# 手机号校验的钩子函数
 	def clean_mobile_phone(self):
-		mobile_phone = self.cleaned_data('mobile_phone')
+		mobile_phone = self.cleaned_data['mobile_phone']
 
 		# 判断短信模板是否有问题
 		tpl = self.request.GET.get('tpl')
@@ -1657,7 +1657,7 @@ register.html
                     // 总路由分发时，加了namspace="web"，反向生成时，要加web:
                     url: "{% url 'web:send_sms' %}",
                     type: "GET",
-                    data: {mobilePhone: mobilePhone, tpl: 'register'},
+                    data: {mobile_phone: mobilePhone, tpl: 'register'},
                     dataType: "JSON", //将服务器返回的数据反序列化为字典
                     success: function (res) {
                         // ajax请求成功后，返回的值存储在res中
@@ -1685,7 +1685,8 @@ settings.py
 LANGUAGE_CODE = 'zh-hans'
 ```
 
-
+- disabled属性
+- 定时器
 
 #### 1.3.点击注册
 
