@@ -19,6 +19,11 @@
     margin-bottom: 20px;
 }
 
+.error-msg {
+    color: red;
+    font-size: 14px;
+    position: absolute;
+}
 /*.account{*/
 /*    width: 400px;*/
 /*    margin: 0 auto;*/

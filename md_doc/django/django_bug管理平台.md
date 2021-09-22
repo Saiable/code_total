@@ -1631,6 +1631,62 @@ from django.http import JsonResponse
 - 失败，错误信息
 - 成功，倒计时
 
+register.html
+
+```javascript
+{% block js %}
+    <script>
+        // 页面加载完成后执行
+        $(function () {
+            bindClickBtnSms()
+        })
+
+        // 绑定获取短信验证码的点击操作
+        function bindClickBtnSms() {
+            $('#btnSms').click(function () {
+                //开始置空error-msg内容
+                $('.error-msg').empty()
+
+                // 获取用户输入的手机号
+                // django 会对由forms生成的字段，加上id_+字段名的id属性
+                {#console.log($('#id_mobile_phone').val())#}
+                var mobilePhone = $('#id_mobile_phone').val()
+                //发送ajax请求
+                $.ajax({
+                    // 反向生成url，等价于send/sms
+                    // 总路由分发时，加了namspace="web"，反向生成时，要加web:
+                    url: "{% url 'web:send_sms' %}",
+                    type: "GET",
+                    data: {mobilePhone: mobilePhone, tpl: 'register'},
+                    dataType: "JSON", //将服务器返回的数据反序列化为字典
+                    success: function (res) {
+                        // ajax请求成功后，返回的值存储在res中
+                        {#console.log(res)#}
+                        if (res.status) {
+                            console.log('发送成功，倒计时')
+                        } else {
+                            //错误信息
+                            console.log(res) //{status:False,error:{mobile_phone:["错误信息"]}}
+                            $.each(res.error,function(key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}
+```
+
+settings.py
+
+```python
+LANGUAGE_CODE = 'zh-hans'
+```
+
+
+
 #### 1.3.点击注册
 
 
