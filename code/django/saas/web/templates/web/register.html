@@ -13,25 +13,25 @@
         <form id="regForm" method="POST" novalidate>
             {% csrf_token %}
             {% for field in form %}
-            {% if field.name == 'code' %}
-                <div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    <div class="row">
-                        <div class="col-xs-7">
-                            {{ field }}
-                            <span class="error-msg"></span>
-                        </div>
-                        <div class="col-xs-5">
-                            <input id="btnSms" type="button" class="btn btn-default" value="点击获取验证码">
+                {% if field.name == 'code' %}
+                    <div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="row">
+                            <div class="col-xs-7">
+                                {{ field }}
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-xs-5">
+                                <input id="btnSms" type="button" class="btn btn-default" value="点击获取验证码">
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% else %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    <span class="error-msg"></span>
-                </div>
-            {% endif %}
+                {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <span class="error-msg"></span>
+                    </div>
+                {% endif %}
             {% endfor %}
             <div class="row">
                 <div class="col-xs-3">
@@ -42,6 +42,34 @@
     </div>
 {% endblock %}
 
-{% block js %}
 
+
+{% block js %}
+    <script>
+        // 页面加载完成后执行
+        $(function () {
+            bindClickBtnSms()
+        })
+
+        // 绑定获取短信验证码的点击操作
+        function bindClickBtnSms() {
+            $('#btnSms').click(function () {
+                // 获取用户输入的手机号
+                // django 会对由forms生成的字段，加上id_+字段名的id属性
+                console.log($('#id_mobile_phone').val())
+                //发送ajax请求
+                $.ajax({
+                    // 反向生成url，等价于send/sms
+                    // 总路由分发时，加了namspace="web"，反向生成时，要加web:
+                    url: "{% url 'web:send_sms' %}",
+                    type: 'GET',
+                    data: {mobilePhone: mobilePhone, tpl: 'register'},
+                    success: function (res) {
+                        // ajax请求成功后，返回的值存储在res中
+                        console.log(res)
+                    }
+                })
+            })
+        }
+    </script>
 {% endblock %}

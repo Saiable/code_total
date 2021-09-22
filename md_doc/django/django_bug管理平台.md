@@ -1322,7 +1322,7 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
       # validator中，可以放一个或多个正则表达式	
       # RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息	
       mobile_phone = forms.CharField(label='手机号', validators=[
-          RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])
+          RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误')])
       # 重写密码字段
       password = forms.CharField(label='密码', widget=forms.PasswordInput())  # 重复密码
       confirm_password = forms.CharField(label='重复密码', widget=forms.PasswordInput())
@@ -1361,7 +1361,8 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
   ```python
   from django.db import models# Create your models here.
   class UserInfo(models.Model):	
-      username = models.CharField(verbose_name = "用户名", max_length = 32)		# EmailField在数据库中，存储的实际还是字符串，区别在于ModelForm在页面上做展示的时候	
+      username = models.CharField(verbose_name = "用户名", max_length = 32)		
+      # EmailField在数据库中，存储的实际还是字符串，区别在于ModelForm在页面上做展示的时候	
       email = models.EmailField(verbose_name = "邮箱", max_length = 32)		
       mobile_phone = models.CharField(verbose_name = "手机号", max_length = 32)	
       password = models.CharField(verbose_name = "密码", max_length = 32)
@@ -1382,14 +1383,40 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
 
 ##### 1.2.2.获取手机号
 
-```js
-{% block js %}    <script>        // 页面加载完成后执行        $(function() {            bindClickBtnSms()        })        // 绑定获取短信验证码的点击操作        function bindClickBtnSms() {            $('#btnSms').click(function () {                // 获取用户输入的手机号                // django 会对由forms生成的字段，加上id_+字段名的id属性                console.log($('#id_mobile_phone').val())            })        }    </script>{% endblock%}
+```javascript
+{% block js %}    
+    <script>        
+        // 页面加载完成后执行        
+        $(function() {            
+        bindClickBtnSms()        
+    })        
+ // 绑定获取短信验证码的点击操作        
+ function bindClickBtnSms() {            
+     $('#btnSms').click(function () {                
+         // 获取用户输入的手机号                
+         // django 会对由forms生成的字段，加上id_+字段名的id属性                
+         console.log($('#id_mobile_phone').val())            
+     })        
+ }    
+ </script>
+ {% endblock%}
 ```
 
 ##### 1.2.3.发送ajax
 
 ```javascript
-//发送ajax请求$.ajax({	// 反向生成url，等价于send/sms	// 总路由分发时，加了namspace="web"，反向生成时，要加web:	url: "{% url 'web:send_sms' %}",	type: 'GET',	data: {mobilePhone:mobilePhone, tpl:'register'},	success: function(res) {		// ajax请求成功后，返回的值存储在res中		console.log(res)	}})
+//发送ajax请求
+$.ajax({	
+    // 反向生成url，等价于send/sms	
+    // 总路由分发时，加了namspace="web"，反向生成时，要加web:	
+    url: "{% url 'web:send_sms' %}",	
+    type: 'GET',	
+    data: {mobilePhone:mobilePhone, tpl:'register'},	
+    success: function(res) {		
+        // ajax请求成功后，返回的值存储在res中		
+        console.log(res)	
+    }
+})
 ```
 
 ##### 1.2.4.手机号校验
@@ -1401,7 +1428,9 @@ F:\workspace\py_virtualenv\myproject\Scripts\saas\static
 form中如果要拿到视图函数中的request值，可以重写`__init__`方法
 
 ```python
-def __init__(self, request, *args, **kwargs):    super().__init__(*args, **kwargs)    self.request = request
+def __init__(self, request, *args, **kwargs):    
+    super().__init__(*args, **kwargs)    
+    self.request = request
 ```
 
 forms/account.py
@@ -1416,7 +1445,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 
 class SendSmsForm(forms.Form):
-	mobile_phone = forms.CharField(label='手机号',validators=[RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])
+	mobile_phone = forms.CharField(label='手机号',validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$'', '手机号格式错误')])
 
 	def __init__(self, request, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -1445,7 +1474,7 @@ class RegisterModeForm(forms.ModelForm):
 	# 变量名要和model中的保持一致
 	# validator中，可以放一个或多个正则表达式
 	# RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息
-	mobile_phone = forms.CharField(label = '手机号', validators = [RegexValidator(r'^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$', '手机号格式错误')])
+	mobile_phone = forms.CharField(label = '手机号', validators = [RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误')])
 	
 	#重写密码字段
 	password = forms.CharField(label = '密码', widget = forms.PasswordInput())
