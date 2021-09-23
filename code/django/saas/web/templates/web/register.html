@@ -49,23 +49,54 @@
         // 页面加载完成后执行
         $(function () {
             bindClickBtnSms()
+            btnClickSubmit()
         })
+
+        //点击提交（注册）
+        function btnClickSubmit() {
+            $('#btnSubmit').click(function () {
+                $('.error-msg').empty()
+                //收集表单中的数据(找到每一个字段)
+                {#/$('#regForm').serialize() //所有的字段+csrf token#}
+                //数据ajax发送到后台
+                $.ajax({
+                    url: "{% url 'web:register' %}",
+                    type: "POST",
+                    data: $('#regForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        {#console.log(res)#}
+                        if (res.status) {
+                            location.href = res.data
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+
+                    }
+                })
+
+            })
+        }
+
         //发送短信倒计时
         function sendSmsReminder() {
             var $smsBtn = $('#btnSms')
 
-            $smsBtn.prop('disabled',true)
+            $smsBtn.prop('disabled', true)
 
             var time = 60
             var remind = setInterval(function () {
-                $smsBtn.val(time+'秒重新发送')
+                $smsBtn.val(time + '秒重新发送')
                 time = time - 1
-                if (time < 1){
+                if (time < 1) {
                     clearInterval(remind)
-                    $smsBtn.val('点击获取验证码').prop('disabled',false)
+                    $smsBtn.val('点击获取验证码').prop('disabled', false)
                 }
-            },1000)
+            }, 1000)
         }
+
         // 绑定获取短信验证码的点击操作
         function bindClickBtnSms() {
             $('#btnSms').click(function () {
@@ -94,7 +125,7 @@
                         } else {
                             //错误信息
                             console.log(res) //{status:False,error:{mobile_phone:["错误信息"]}}
-                            $.each(res.error,function(key, value) {
+                            $.each(res.error, function (key, value) {
                                 $("#id_" + key).next().text(value[0])
                             })
                         }

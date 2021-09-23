@@ -6,10 +6,24 @@ from django.http import JsonResponse
 
 
 def register(request):
-    form = RegisterModelForm()
-    return render(request, 'web/register.html', {'form': form})
-
-
+    if request.method == 'GET':
+        form = RegisterModelForm()
+        return render(request, 'web/register.html', {'form': form})
+    # print(request.POST)
+    form = RegisterModelForm(data=request.POST)
+    if form.is_valid():
+        # print(form.cleaned_data)
+        # 验证通过，写入数据库，密码要是密文
+        instance = form.save()
+        # data = form.cleaned_data
+        # data.pop('code')
+        # data.pop('confirm_password')
+        # instance = models.UserInfo.objects.create(**data)
+        return JsonResponse({'status': True,'data':'/login/'})
+    else:
+        # print(form.errors)
+        return JsonResponse({'status': False, 'error': form.errors})
+    return JsonResponse({})
 def send_sms(request):
     # mobile_phone = request.GET.get('mobilePhone')
     # tpl = request.GET.get('tpl')

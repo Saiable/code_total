@@ -136,6 +136,20 @@ TENCENT_SMS_TEMPLATE = {
     'register': 832736,
     'login': 840501
 }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://1.116.68.249:6380",  # 安装redis的主机的IP和端口
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 1000,
+                "encoding": "utf-8"
+            },
+            "PASSWORD": "foobaredsai"  # redis密码，放在local_settings.py中
+        }
+    }
+}
 
 try:
     from .local_settings import *

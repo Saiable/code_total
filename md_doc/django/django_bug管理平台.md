@@ -361,13 +361,13 @@ F:\workspace\py_virtual_env\myproject>cd ScriptsF:\workspace\py_virtual_env\mypr
 
 ### 内容回顾
 
-#### 1.local_settings的作用？
+1.local_settings的作用？
 
 ```
 本地配置信息- 开发- 测试- 运维
 ```
 
-#### 2.gitignore的作用？
+2.gitignore的作用？
 
 ```
 git软件，本地进行版本管理的时候，需要忽略的文件	
@@ -378,7 +378,7 @@ git commit -m up
 代码托管
 ```
 
-#### 3.虚拟环境的作用？
+3.虚拟环境的作用？
 
 ```python
 项目环境之间的隔离开发：本地环境线上：比较抠的公司，一台服务器跑两个项目，做多环境隔离
@@ -1784,9 +1784,203 @@ LANGUAGE_CODE = 'zh-hans'
           self.request = request
   ```
 
-  
+- 短信
+
+- redis(django-redis)
+
+- 倒计时
 
 
 
+## Day04.今日概要
 
+### 内容回顾
+
+- 项目规则
+
+  - 创建项目：静态文件、视图、路由等
+
+- ajax
+
+  ```javascript
+  $.ajax({
+      url: '...',
+      type: 'GET',
+      data: {},
+      dataType: 'JSON',
+      success: function(res) {
+          
+      }
+  })
+  ```
+
+- ModelForm/Form中想要使用视图中的数据，例如：request
+
+  ```
+  重写ModelForm/Form的__init__方法，把想要的数据传递
+  ```
+
+- django-redis
+
+### 今日概要
+
+- 点击注册
+- 用户登陆
+  - 短信验证码登陆
+  - 手机或者邮箱/密码登陆
+- 项目管理
+
+### 1.点击注册
+
+#### 1.1.点击收集数据&ajax
+
+register.html
+
+```javascript
+        // 页面加载完成后执行
+        $(function () {
+            bindClickBtnSms()
+            btnClickSubmit()
+        })
+        
+        //点击提交（注册）
+        function btnClickSubmit() {
+            $('#btnSubmit').click(function () {
+                //收集表单中的数据(找到每一个字段)
+                {#/$('#regForm').serialize() //所有的字段+csrf token#}
+                //数据ajax发送到后台
+                $.ajax({
+                    url: "{% url 'web:register' %}",
+                    type: "POST",
+                    data: $('#regForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        console.log(res)
+                    }
+                })
+
+            })
+        }
+```
+
+views/account.py
+
+```python
+def register(request):
+    if request.method == 'GET':
+        form = RegisterModelForm()
+        return render(request, 'web/register.html', {'form': form})
+    print(request.POST)
+    return JsonResponse({})
+```
+
+
+
+#### 1.2.数据校验（每个字段）
+
+forms/account.py
+
+```python
+class RegisterModelForm(forms.ModelForm):
+    # 变量名要和model中的保持一致
+    # validator中，可以放一个或多个正则表达式
+    # RegexValidator是一个对象，接收两个参数：1.正则表达式2.正则未通过时的报错信息
+    mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])
+    # mobile_phone = forms.CharField(label='手机号')
+    # 重写密码字段
+    password = forms.CharField(
+        label='密码',
+        min_length=8,
+        max_length=64,
+        error_messages={
+            'min_length':'密码长度不能小于8个字符',
+            'max_length':'密码长度不能大于64个字符'
+        },
+        widget=forms.PasswordInput())  # 重复密码
+    confirm_password = forms.CharField(
+        label='重复密码',
+        min_length=8,
+        max_length=64,
+        error_messages={
+            'min_length': '密码长度不能小于8个字符',
+            'max_length': '密码长度不能大于64个字符'
+        },
+        widget=forms.PasswordInput())
+    # 验证码
+    code = forms.CharField(label='验证码')
+
+    class Meta:
+        model = models.UserInfo
+        # fields = "__all__"
+        fields = ['username', 'email', 'password', 'confirm_password', 'mobile_phone', 'code']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        exsits = models.UserInfo.objects.filter(username=username).exsits()
+        if exsits:
+            raise ValidationError('用户名已存在')
+        return username
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        exsits = models.UserInfo.objects.filter(email=email).exsits()
+        if exsits:
+            raise ValidationError('邮箱已存在')
+        return email
+    def clean_confirm_password(self):
+        pwd = self.cleaned_data['password']
+        confirm_pwd = self.cleaned_data['confirm_password']
+        if pwd != confirm_pwd:
+            raise ValidationError('两次密码不一致')
+        return confirm_pwd
+    def clean_mobile_phone(self):
+        mobile_phone = self.cleaned_data['mobile_phone']
+        exsits = models.UserInfo.objects.filter(mobile_phone=mobile_phone).exsits()
+        if exsits:
+            raise ValidationError('手机号已注册')
+        return mobile_phone
+    def clean_code(self):
+        code = self.cleaned_data['code']
+        mobile_phone = self.cleaned_data['mobile_phone']
+
+        conn = get_redis_connection()
+        redis_code = conn.get(mobile_phone)
+        if not redis_code:
+            raise ValidationError('验证码失效或未发送，请重新发送')
+
+        redis_str_code = redis_code.decode('utf-8')
+        if code.strip() != redis_str_code:
+            raise ValidationError('验证码错误，请重新输入')
+        return code
+```
+
+```python
+class UserInfo(models.Model):
+    username = models.CharField(verbose_name='用户名',max_length=32,db_index=True)
+```
+
+views/account.py
+
+```python
+def register(request):
+    if request.method == 'GET':
+        form = RegisterModelForm()
+        return render(request, 'web/register.html', {'form': form})
+    # print(request.POST)
+    form = RegisterModelForm(data=request.POST)
+    if form.is_valid():
+        print(form.cleaned_data)
+    else:
+        print(form.errors)
+    return JsonResponse({})
+```
+
+
+
+#### 1.3.写入数据库
 
