@@ -1688,9 +1688,103 @@ LANGUAGE_CODE = 'zh-hans'
 - disabled属性
 - 定时器
 
+```javascript
+        //发送短信倒计时
+        function sendSmsReminder() {
+            var $smsBtn = $('#btnSms')
+
+            $smsBtn.prop('disabled',true)
+
+            var time = 60
+            var remind = setInterval(function () {
+                $smsBtn.val(time+'秒重新发送')
+                time = time - 1
+                if (time < 1){
+                    clearInterval(remind)
+                    $smsBtn.val('点击获取验证码').prop('disabled',false)
+                }
+            },1000)
+```
+
+
+
 #### 1.3.点击注册
 
+##### 内容总结
 
+- 视图 view.py -> view目录
+
+- 模板，根目录templates -> 根据app注册顺序去每个app的templates中
+
+- 静态文件，同上static
+
+- 项目中多个app想要各自的模板， 静态文件隔离，建议通过app名称在进行嵌套即可
+
+- 路由分发
+
+  - include
+  - namespace
+
+- 母版
+
+  ```
+  title
+  css
+  content
+  js
+  ```
+
+- bootstrap导航条、去除圆角、container
+
+- ModelForm生成HTML标签，自动ID`id_字段名`
+
+- 发送ajax请求
+
+  ```javascript
+  $.ajax({
+      // 反向生成url，等价于send/sms
+      // 总路由分发时，加了namspace="web"，反向生成时，要加web:
+      url: "{% url 'web:send_sms' %}",
+      type: "GET",
+      data: {mobile_phone: mobilePhone, tpl: 'register'},
+      dataType: "JSON", //将服务器返回的数据反序列化为字典
+      success: function (res) {
+          // ajax请求成功后，返回的值存储在res中
+          {#console.log(res)#}
+          if (res.status) {
+              {#console.log('发送成功，倒计时')#}
+              sendSmsReminder()
+  
+              } else {
+                  //错误信息
+                  console.log(res) //{status:False,error:{mobile_phone:["错误信息"]}}
+                  $.each(res.error,function(key, value) {
+                      $("#id_" + key).next().text(value[0])
+                  })
+              }
+          }
+  })
+  ```
+
+- Form&ModelForm可以进行表单验证
+
+  ```python
+  form = SendSmsForm(data=request.POST) # QueryDict
+  form = SendSmsForm(data=request.GET) # QueryDict
+  ```
+
+- Form&ModelForm中如果想要用视图中的值（request）
+
+  ```python
+  class SendSmsForm(forms.Form):
+      mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])
+  
+      def __init__(self, request, *args, **kwargs):
+          super().__init__(*args, **kwargs)
+          self.request = request
+  ```
+
+  
 
 
 
