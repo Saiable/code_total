@@ -2099,34 +2099,6 @@ js和register中的类似，唯一不同的是tpl='login'
     $(function () {
         bindClickBtnSms()
     })
-    
-        //点击提交（注册）
-        function btnClickSubmit() {
-            $('#btnSubmit').click(function () {
-                $('.error-msg').empty()
-                //收集表单中的数据(找到每一个字段)
-                {#/$('#regForm').serialize() //所有的字段+csrf token#}
-                //数据ajax发送到后台
-                $.ajax({
-                    url: "{% url 'web:register' %}",
-                    type: "POST",
-                    data: $('#regForm').serialize(),
-                    dataType: "JSON",
-                    success: function (res) {
-                        {#console.log(res)#}
-                        if (res.status) {
-                            location.href = res.data
-                        } else {
-                            $.each(res.error, function (key, value) {
-                                $("#id_" + key).next().text(value[0])
-                            })
-                        }
-
-                    }
-                })
-
-            })
-        }
 
         //发送短信倒计时
         function sendSmsReminder() {
@@ -2203,13 +2175,274 @@ sendSMSForm中对tpl的值进行判断处理
 
 #### 2.3.点击登陆
 
+登陆按钮添加点击事件
+
+```javascript
+//点击登陆
+function btnClickSubmit() {
+    $('#btnSubmit').click(function () {
+        $('.error-msg').empty()
+        //收集表单中的数据(找到每一个字段)
+        {#/$('#regForm').serialize() //所有的字段+csrf token#}
+        //数据ajax发送到后台
+        $.ajax({
+            url: "{% url 'web:login_sms' %}",
+            type: "POST",
+            data: $('#regForm').serialize(),
+            dataType: "JSON",
+            success: function (res) {
+                {#console.log(res)#}
+                if (res.status) {
+                    location.href = res.data
+                } else {
+                    $.each(res.error, function (key, value) {
+                        $("#id_" + key).next().text(value[0])
+                    })
+                }
+
+            }
+        })
+
+    })
+}
+```
+
+视图函数对POST请求进行处理
+
+```python
+def login_sms(request):
+    if request.method == 'GET':
+        form = LoginSMSForm()
+        return render(request,'web/login_sms.html',{'form':form})
+    form = LoginSMSForm(request.POST)
+    if form.is_valid():
+        # user_object = form.cleaned_data['mobile_phone']
+        mobile_phone = form.cleaned_data.get('mobile_phone')
+        user_object = models.UserInfo.objects.filter(mobile_phone=mobile_phone).first()
+        # 用户信息放入session
+        # print(user_object)
+        request.session['user_id'] = user_object.id
+        request.session['user_name'] = user_object.user_name
+
+        return JsonResponse({'status': True,'data':'/index/'})
+    return JsonResponse({'status': False, 'error': form.errors})
+```
+
+Form中对字段进行校验
+
+```python
+class LoginSMSForm(BootstrapForm, forms.Form):
+    mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])
+    code = forms.CharField(label='验证码',widget=forms.TextInput())
+    def clean_mobile_phone(self):
+        mobile_phone = self.cleaned_data.get('mobile_phone')
+        user_object = models.UserInfo.objects.filter(mobile_phone=mobile_phone).first()
+        if not user_object:
+            raise ValidationError('手机号不存在')
+        return user_object
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        # mobile_phone = self.cleaned_data['mobile_phone']
+        # 通过get方式获取mobile_phone
+        user_object = self.cleaned_data.get('mobile_phone')
+        if not user_object:
+            return code
+
+        conn = get_redis_connection()
+        redis_code = conn.get(user_object.obile_phone)
+        if not redis_code:
+            raise ValidationError('验证码失效或未发送，请重新发送')
+
+        redis_str_code = redis_code.decode('utf-8')
+        if code.strip() != redis_str_code:
+            raise ValidationError('验证码错误，请重新输入')
+        return code
+```
+
+### 3.用户名、密码登陆
+
+#### 3.1.pillow模块
+
+指定清华源安装，快一点
+
+`pip3 install pillow -i https://pypi.tuna.tsinghua.edu.cn/simple`
+
+1.创建图片
+
+```python
+from PIL import Image
+
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+
+# 在图片查看器中打开
+# img.show()
+
+# 保存在本地
+with open('code.png', 'wb') as f:
+    img.save(f, format='png')
+```
+
+2.创建画笔，用于在图片上画任意内容
+
+```python
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+draw = ImageDraw.Draw(img, mode='RGB')
+```
+
+ 3.画点
+
+```python
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+draw = ImageDraw.Draw(img, mode='RGB')
+# 第一个参数：表示坐标
+# 第二个参数：表示颜色
+draw.point([100, 100], fill="red")
+draw.point([300, 300], fill=(255, 255, 255))
+```
+
+4.画线
+
+```python
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+draw = ImageDraw.Draw(img, mode='RGB')
+# 第一个参数：表示起始坐标和结束坐标
+# 第二个参数：表示颜色
+draw.line((100,100,100,300), fill='red')
+draw.line((100,100,300,100), fill=(255, 255, 255))
+```
+
+5.画圆
+
+```python
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+draw = ImageDraw.Draw(img, mode='RGB')
+# 第一个参数：表示起始坐标和结束坐标（圆要画在其中间）
+# 第二个参数：表示开始角度
+# 第三个参数：表示结束角度
+# 第四个参数：表示颜色
+draw.arc((100,100,300,300),0,90,fill="red")
+```
+
+6.写文本
+
+```python
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+draw = ImageDraw.Draw(img, mode='RGB')
+# 第一个参数：表示起始坐标
+# 第二个参数：表示写入内容
+# 第三个参数：表示颜色
+draw.text([0,0],'python',"red")
+```
+
+7.特殊字体文字
+
+```python
+img = Image.new(mode='RGB', size=(120, 30), color=(255, 255, 255))
+draw = ImageDraw.Draw(img, mode='RGB')
+# 第一个参数：表示字体文件路径
+# 第二个参数：表示字体大小
+font = ImageFont.truetype("kumo.ttf", 28)
+# 第一个参数：表示起始坐标
+# 第二个参数：表示写入内容
+# 第三个参数：表示颜色
+# 第四个参数：表示颜色
+draw.text([0, 0], 'python', "red", font=font)
+```
+
+图片验证码
+
+```python
+import random
+
+
+def check_code(width=120, height=30, char_length=5, font_file='kumo.ttf', font_size=28):
+    code = []
+    img = Image.new(mode='RGB', size=(width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img, mode='RGB')
+
+    def rndChar():
+        """
+        生成随机字母
+        :return:
+        """
+        return chr(random.randint(65, 90))
+
+    def rndColor():
+        """
+        生成随机颜色
+        :return:
+        """
+        return (random.randint(0, 255), random.randint(10, 255), random.randint(64, 255))
+
+    # 写文字
+    font = ImageFont.truetype(font_file, font_size)
+    for i in range(char_length):
+        char = rndChar()
+        code.append(char)
+        h = random.randint(0, 4)
+        draw.text([i * width / char_length, h], char, font=font, fill=rndColor())
+
+    # 写干扰点
+    for i in range(40):
+        draw.point([random.randint(0, width), random.randint(0, height)], fill=rndColor())
+
+    # 写干扰圆圈
+    for i in range(40):
+        draw.point([random.randint(0, width), random.randint(0, height)], fill=rndColor())
+        x = random.randint(0, width)
+        y = random.randint(0, height)
+        draw.arc((x, y, x + 4, y + 4), 0, 90, fill=rndColor())
+
+    # 画干扰线
+    for i in range(5):
+        x1 = random.randint(0, width)
+        y1 = random.randint(0, height)
+        x2 = random.randint(0, width)
+        y2 = random.randint(0, height)
+
+        draw.line((x1, y1, x2, y2), fill=rndColor())
+
+    img = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
+    return img, ''.join(code)
+
+
+if __name__ == '__main__':
+    # 1. 直接打开
+    # img,code = check_code()
+    # img.show()
+
+    # 2. 写入文件
+    # img,code = check_code()
+    # with open('code.png','wb') as f:
+    #     img.save(f,format='png')
+
+    # 3. 写入内存(Python3)
+    # from io import BytesIO
+    # stream = BytesIO()
+    # img.save(stream, 'png')
+    # stream.getvalue()
+
+    # 4. 写入内存（Python2）
+    # import StringIO
+    # stream = StringIO.StringIO()
+    # img.save(stream, 'png')
+    # stream.getvalue()
+
+    pass
+```
+
+字体文件：[点击下载](http://files.cnblogs.com/files/wupeiqi/%E9%AA%8C%E8%AF%81%E7%A0%81%E5%AD%97%E4%BD%93%E6%96%87%E4%BB%B6.zip)
+
+#### 3.2.Session&Cookie
 
 
 
+#### 3.3.页面显示
 
 
 
-
+#### 3.4.登陆
 
 
 

@@ -15,3 +15,6 @@ Django之Form组件与ModelForm
 
 ### form钩子函数&add_error
 
+
+
+### object.filter().exsits()以及first()

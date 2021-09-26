@@ -1,7 +1,7 @@
 {% extends 'web/layout/basic.html' %}
 {% load static %}
 
-{% block title %}用户注册{% endblock %}
+{% block title %}用户登陆{% endblock %}
 
 {% block css %}
     <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
@@ -48,9 +48,10 @@
     <script>
     $(function () {
         bindClickBtnSms()
+        btnClickSubmit()
     })
     
-        //点击提交（注册）
+        //点击登陆
         function btnClickSubmit() {
             $('#btnSubmit').click(function () {
                 $('.error-msg').empty()
@@ -58,7 +59,7 @@
                 {#/$('#regForm').serialize() //所有的字段+csrf token#}
                 //数据ajax发送到后台
                 $.ajax({
-                    url: "{% url 'web:register' %}",
+                    url: "{% url 'web:login_sms' %}",
                     type: "POST",
                     data: $('#regForm').serialize(),
                     dataType: "JSON",

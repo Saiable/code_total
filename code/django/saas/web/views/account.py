@@ -3,7 +3,7 @@ from django.shortcuts import render,HttpResponse
 from web.forms.account import RegisterModelForm,SendSmsForm,LoginSMSForm
 from django.conf import settings
 from django.http import JsonResponse
-
+from web import models
 
 def register(request):
     if request.method == 'GET':
