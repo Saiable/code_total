@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os,sys
+import os, sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,7 +26,6 @@ SECRET_KEY = 's72a9bf)3pyun-%d&mw2d(=-%f(#50w(&6kos7rec9q&(421_k'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -71,7 +70,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'saas.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -81,7 +79,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -101,7 +98,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -114,7 +110,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -136,24 +131,25 @@ TENCENT_SMS_TEMPLATE = {
     'register': 832736,
     'login': 840501
 }
+# 这里redis没有配密码，否则总是会提示授权未认证，明明密码就是对的
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://1.116.68.249:6380",  # 安装redis的主机的IP和端口
+        "LOCATION": "redis://1.116.68.249:6380",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {
                 "max_connections": 1000,
                 "encoding": "utf-8"
             },
-            "PASSWORD": "foobaredsai"  # redis密码，放在local_settings.py中
         }
     }
 }
 
+
 try:
     from .local_settings import *
 except ImportError as err:
-    print('import error:',err)
+    print('import error:', err)
 
 # print(TENCENT_SMS_APP_ID)

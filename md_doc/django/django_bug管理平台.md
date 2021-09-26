@@ -1984,3 +1984,302 @@ def register(request):
 
 #### 1.3.写入数据库
 
+需要手动选取，sqlite3文件所在的目录才行
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/fb0d847fd81f47a9bbdaa49f8020be7c.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAU2FpYWJsZQ==,size_20,color_FFFFFF,t_70,g_se,x_16)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/8ad0b8c0b31740aaa6aad4d1429d4e2c.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAU2FpYWJsZQ==,size_20,color_FFFFFF,t_70,g_se,x_16)
+
+如上图，用户注册数据，已成功入库
+
+#### 1.4.bug
+
+当用户注册成功之后，如果立即返回，再进行注册
+
+则会报以下错误
+
+```
+File "F:\workspace\git\code_total\code\django\saas\web\forms\account.py", line 88, in clean_code
+    mobile_phone = self.cleaned_data['mobile_phone']
+KeyError: 'mobile_phone'
+```
+
+我们看下mobile_phone的钩子函数
+
+```python
+    def clean_mobile_phone(self):
+        mobile_phone = self.cleaned_data['mobile_phone']
+        exists = models.UserInfo.objects.filter(mobile_phone=mobile_phone).exists()
+        if exists:
+            raise ValidationError('手机号已注册')
+        return mobile_phone
+```
+
+再看下code的钩子函数
+
+```python
+    def clean_code(self):
+        code = self.cleaned_data['code']
+        mobile_phone = self.cleaned_data['mobile_phone']
+
+        conn = get_redis_connection()
+        redis_code = conn.get(mobile_phone)
+        if not redis_code:
+            raise ValidationError('验证码失效或未发送，请重新发送')
+
+        redis_str_code = redis_code.decode('utf-8')
+        if code.strip() != redis_str_code:
+            raise ValidationError('验证码错误，请重新输入')
+        return code
+```
+
+上面的情景下，第二次点时，mobile_phone是已经存在的，所以会抛出“手机号已注册”的异常，因此cleaned_data就不会有mobile_phone，所以你在code的钩子函数里，取mobile_phone自然会报错
+
+解决方案一：不通过索引，通过get方式
+
+```python
+        mobile_phone = self.cleaned_data.get('mobile_phone')
+        if not mobile_phone:
+            return code
+```
+
+解决方案二：mobile_phone的错误信息添加到add_error中，即使校验失败了，也是认为，这个值是可以放在cleaned_data中的，mobile_phone会正常返回
+
+```python
+        if exists:
+            # raise ValidationError('手机号已注册')
+            self.add_error('username','手机号已注册')
+        return mobile_phone
+```
+
+同上，修改下password和confirm_password的钩子函数中，获取key的方式
+
+### 2.短信登陆
+
+#### 2.1.展示页面
+
+路由
+
+```python
+    url(r'^login/sms$', account.login_sms, name='login_sms'),
+```
+
+视图函数
+
+```python
+def login_sms(request):
+    form = LoginSMSForm()
+    return render(request,'web/login_sms.html',{'form':form})
+```
+
+Form
+
+```python
+class BootstrapForm(object):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
+
+class LoginSMSForm(BootstrapForm, forms.Form):
+    mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])
+    code = forms.CharField(label='验证码',widget=forms.TextInput())
+```
+
+
+
+#### 2.2.点击发送短信
+
+js和register中的类似，唯一不同的是tpl='login'
+
+```python
+{% block js %}
+    <script>
+    $(function () {
+        bindClickBtnSms()
+    })
+    
+        //点击提交（注册）
+        function btnClickSubmit() {
+            $('#btnSubmit').click(function () {
+                $('.error-msg').empty()
+                //收集表单中的数据(找到每一个字段)
+                {#/$('#regForm').serialize() //所有的字段+csrf token#}
+                //数据ajax发送到后台
+                $.ajax({
+                    url: "{% url 'web:register' %}",
+                    type: "POST",
+                    data: $('#regForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        {#console.log(res)#}
+                        if (res.status) {
+                            location.href = res.data
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+
+                    }
+                })
+
+            })
+        }
+
+        //发送短信倒计时
+        function sendSmsReminder() {
+            var $smsBtn = $('#btnSms')
+
+            $smsBtn.prop('disabled', true)
+
+            var time = 60
+            var remind = setInterval(function () {
+                $smsBtn.val(time + '秒重新发送')
+                time = time - 1
+                if (time < 1) {
+                    clearInterval(remind)
+                    $smsBtn.val('点击获取验证码').prop('disabled', false)
+                }
+            }, 1000)
+        }
+
+        // 绑定获取短信验证码的点击操作
+        function bindClickBtnSms() {
+            $('#btnSms').click(function () {
+                //开始置空error-msg内容
+                $('.error-msg').empty()
+
+                // 获取用户输入的手机号
+                // django 会对由forms生成的字段，加上id_+字段名的id属性
+                {#console.log($('#id_mobile_phone').val())#}
+                var mobilePhone = $('#id_mobile_phone').val()
+                //发送ajax请求
+                $.ajax({
+                    // 反向生成url，等价于send/sms
+                    // 总路由分发时，加了namspace="web"，反向生成时，要加web:
+                    url: "{% url 'web:send_sms' %}",
+                    type: "GET",
+                    data: {mobile_phone: mobilePhone, tpl: 'login'},
+                    dataType: "JSON", //将服务器返回的数据反序列化为字典
+                    success: function (res) {
+                        // ajax请求成功后，返回的值存储在res中
+                        {#console.log(res)#}
+                        if (res.status) {
+                            {#console.log('发送成功，倒计时')#}
+                            sendSmsReminder()
+
+                        } else {
+                            //错误信息
+                            console.log(res) //{status:False,error:{mobile_phone:["错误信息"]}}
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+
+{% endblock %}
+```
+
+sendSMSForm中对tpl的值进行判断处理
+
+```python
+        exsits = models.UserInfo.objects.filter(mobile_phone=mobile_phone).exists()
+
+        if tpl == 'login':
+            if not exsits:
+                raise ValidationError('手机号不存在')
+        else:
+            if exsits:
+                raise ValidationError('手机号已存在')
+```
+
+
+
+#### 2.3.点击登陆
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
