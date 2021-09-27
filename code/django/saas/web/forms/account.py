@@ -11,6 +11,10 @@ from utils.encrypt import md5
 from .bootstrap import BootstrapForm
 
 
+class LoginForm(BootstrapForm, forms.Form):
+    username = forms.CharField(label='用户名')
+    password = forms.CharField(label='密码',widget=forms.PasswordInput())
+    code = forms.CharField(label='图片验证码')
 
 class LoginSMSForm(BootstrapForm, forms.Form):
     mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])

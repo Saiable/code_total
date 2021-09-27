@@ -2436,11 +2436,104 @@ if __name__ == '__main__':
 
 #### 3.2.Session&Cookie
 
+django默认中，是有一个session表的，字段值分别为`session_key`、`session_data`、`expire_date`
 
+![](https://web-image-link-1301132383.cos.ap-nanjing.myqcloud.com/django/session%26cookie.png)
+
+![](https://web-image-link-1301132383.cos.ap-nanjing.myqcloud.com/django/code.png)
 
 #### 3.3.页面显示
 
+新建login路由
 
+```python
+    url(r'^login$', account.login, name='login'),
+```
+
+新建login视图函数
+
+```python
+def login(request):
+    form = LoginForm()
+    return render(request,'web/login.html',{'form':form})
+```
+
+新建login模板
+
+```python
+{% extends 'web/layout/basic.html' %}
+{% load static %}
+
+{% block title %}用户登陆{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+        <div class="title">用户登陆</div>
+        <form id="regForm" method="POST" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.name == 'code' %}
+                    <div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="row">
+                            <div class="col-xs-7">
+                                {{ field }}
+                                <span class="error-msg">{{ field.errors.0 }}</span>
+                            </div>
+                            <div class="col-xs-5">
+                                <img src="{% url 'web:image_code' %}" alt="">
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <span class="error-msg">{{ field.errors.0 }}</span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div class="row">
+                <div class="col-xs-3">
+                    <input type="submit" class="btn btn-primary" value="登  陆"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+
+
+{% block js %}
+
+{% endblock %}
+```
+
+更改提交方式为submit，span标签添加`field.errors.0`
+
+新建图片验证码路由
+
+```python
+    url(r'^image_code$', account.image_code, name='image_code'),
+```
+
+新建图片验证码视图
+
+```python
+from utils.image_code import check_code
+from io import BytesIO
+
+def image_code(request):
+    image_object ,code = check_code()
+    stream = BytesIO()
+    image_object.save(stream, 'png')
+    return HttpResponse(stream.getvalue())
+```
+
+图片验证码直接写入内存中，然后直接返回给用户
 
 #### 3.4.登陆
 

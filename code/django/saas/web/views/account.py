@@ -1,10 +1,17 @@
 """用户账户相关的功能：注册、短信、登录、注销"""
 from django.shortcuts import render,HttpResponse
-from web.forms.account import RegisterModelForm,SendSmsForm,LoginSMSForm
+from web.forms.account import RegisterModelForm,SendSmsForm,LoginSMSForm,LoginForm
 from django.conf import settings
 from django.http import JsonResponse
 from web import models
+from utils.image_code import check_code
+from io import BytesIO
 
+def image_code(request):
+    image_object ,code = check_code()
+    stream = BytesIO()
+    image_object.save(stream, 'png')
+    return HttpResponse(stream.getvalue())
 def register(request):
     if request.method == 'GET':
         form = RegisterModelForm()
@@ -52,3 +59,7 @@ def login_sms(request):
 
         return JsonResponse({'status': True,'data':'/index/'})
     return JsonResponse({'status': False, 'error': form.errors})
+
+def login(request):
+    form = LoginForm()
+    return render(request,'web/login.html',{'form':form})
