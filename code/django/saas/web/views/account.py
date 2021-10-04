@@ -1,14 +1,17 @@
 """用户账户相关的功能：注册、短信、登录、注销"""
-from django.shortcuts import render,HttpResponse
+from django.shortcuts import render,HttpResponse,redirect
 from web.forms.account import RegisterModelForm,SendSmsForm,LoginSMSForm,LoginForm
 from django.conf import settings
 from django.http import JsonResponse
 from web import models
 from utils.image_code import check_code
 from io import BytesIO
+from django.db.models import Q
 
 def image_code(request):
     image_object ,code = check_code()
+    request.session['image_code'] = code
+    request.session.set_expiry(60)
     stream = BytesIO()
     image_object.save(stream, 'png')
     return HttpResponse(stream.getvalue())
@@ -26,7 +29,7 @@ def register(request):
         # data.pop('code')
         # data.pop('confirm_password')
         # instance = models.UserInfo.objects.create(**data)
-        return JsonResponse({'status': True,'data':'/login/'})
+        return JsonResponse({'status': True,'data':'/web/login/'})
     else:
         # print(form.errors)
         return JsonResponse({'status': False, 'error': form.errors})
@@ -60,6 +63,35 @@ def login_sms(request):
         return JsonResponse({'status': True,'data':'/index/'})
     return JsonResponse({'status': False, 'error': form.errors})
 
+'''
+用户名密码登陆
+'''
 def login(request):
-    form = LoginForm()
+    if request.method == 'GET':
+        form = LoginForm(request)
+        return render(request,'web/login.html',{'form':form})
+    form = LoginForm(request,data=request.POST)
+    if form.is_valid():
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        print(username,password)
+
+        # user_object =models.UserInfo.objects.filter(username=username,password=password).first()
+        user_object = models.UserInfo.objects.filter(Q(email=username) | Q(mobile_phone=username)).filter(password=password).first()
+        # 如果去数据库里拿到了
+        print(user_object)
+        if user_object:
+            # 登陆成功
+            request.session['user_id'] = user_object.id
+            # 用户信息保存两周
+            request.session.set_expiry(60*60*24*14)
+            return redirect('/web/index')
+        form.add_error('username','用户名或者密码错误')
+    # 校验没通过的话，则会显示错误信息
     return render(request,'web/login.html',{'form':form})
+
+
+# 用户退出
+def logout(request):
+    request.session.flush()
+    return redirect('/web/index')

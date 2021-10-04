@@ -11,10 +11,6 @@ from utils.encrypt import md5
 from .bootstrap import BootstrapForm
 
 
-class LoginForm(BootstrapForm, forms.Form):
-    username = forms.CharField(label='用户名')
-    password = forms.CharField(label='密码',widget=forms.PasswordInput())
-    code = forms.CharField(label='图片验证码')
 
 class LoginSMSForm(BootstrapForm, forms.Form):
     mobile_phone = forms.CharField(label='手机号', validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误'), ])
@@ -35,7 +31,7 @@ class LoginSMSForm(BootstrapForm, forms.Form):
             return code
 
         conn = get_redis_connection()
-        redis_code = conn.get(user_object.obile_phone)
+        redis_code = conn.get(user_object.mobile_phone)
         if not redis_code:
             raise ValidationError('验证码失效或未发送，请重新发送')
 
@@ -174,8 +170,39 @@ class SendSmsForm(forms.Form):
         # 写redis(django-redis)
 
         conn = get_redis_connection()
-        conn.set(mobile_phone, code, ex=60)
+        # conn.set(mobile_phone, code, ex=60)
+        conn.set(mobile_phone, code)
 
 
         return mobile_phone
 
+class LoginForm(BootstrapForm, forms.Form):
+    username = forms.CharField(label='邮箱或手机号')
+    password = forms.CharField(label='密码',widget=forms.PasswordInput(render_value=True))
+    code = forms.CharField(label='图片验证码')
+
+    def __init__(self,request,*args,**kwargs):
+        # super(LoginForm, self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
+        self.request = request
+
+    # 用户验证码的钩子函数
+    def clean_code(self):
+        # 读取用户输入的验证码
+        code = self.cleaned_data['code']
+
+        # 去session中获取自己的验证码
+        session_code = self.request.session.get('image_code')
+        print(session_code)
+        if not session_code:
+            raise ValidationError('验证码已过期，请重新获取')
+
+        if code.strip().upper() != session_code.strip().upper():
+            raise ValidationError('验证码输入错误')
+
+        return code
+
+    def clean_password(self):
+        pwd = self.cleaned_data['password']
+        # 加密，返回
+        return md5(pwd)

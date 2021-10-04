@@ -33,6 +33,10 @@
                     </div>
                 {% endif %}
             {% endfor %}
+
+            <div style="float: right">
+                <a href="{% url 'web:login' %}">账号密码登陆</a>
+            </div>
             <div class="row">
                 <div class="col-xs-3">
                     <input id="btnSubmit" type="button" class="btn btn-primary" value="登  陆"/>
@@ -46,11 +50,11 @@
 
 {% block js %}
     <script>
-    $(function () {
-        bindClickBtnSms()
-        btnClickSubmit()
-    })
-    
+        $(function () {
+            bindClickBtnSms()
+            btnClickSubmit()
+        })
+
         //点击登陆
         function btnClickSubmit() {
             $('#btnSubmit').click(function () {

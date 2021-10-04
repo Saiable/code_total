@@ -2535,13 +2535,316 @@ def image_code(request):
 
 图片验证码直接写入内存中，然后直接返回给用户
 
+将验证码写入`session`中，并设置过期时间
+
+```python
+def image_code(request):
+    image_object ,code = check_code()
+    request.session['image_code'] = code
+    request.session.set_expiry(60)
+    stream = BytesIO()
+    image_object.save(stream, 'png')
+    return HttpResponse(stream.getvalue())
+```
+
+问：session处理和redis处理对比
+
+生成随机字符串，将这个随机字符串当成key，然后验证码当成value写到redis中，后面用户再来的时候，又要读redis取验证码，这样又得操作cookie，又得操作redis，比较麻烦。
+
+而session，恰好会生成唯一标识，比较简单。
+
+而发短信不用session，是用户自己填写的，手机号就是唯一标识，而不用我们生成唯一标识。
+
+
+
+如果使用默认的sqlite数据库，session会存在dajngo-session表中，即使值过期了，字段值还会存在
+
+
+
+设置点击事件，点击更换验证码
+
+```javascript
+    <script>
+        $(function () {
+            SwitchImageCode();
+        })
+
+        function SwitchImageCode() {
+            $('#imageCode').click(function () {
+                var oldSrc = $(this).attr('src')
+                $(this).attr('src',oldSrc+'?')
+            })
+        }
+    </script>
+```
+
+
+
 #### 3.4.登陆
 
+account/login.py
 
+```python
+'''
+用户名密码登陆
+'''
+def login(request):
+    if request.method == 'GET':
+        form = LoginForm(request)
+        return render(request,'web/login.html',{'form':form})
+    form = LoginForm(request,data=request.POST)
+    if form.is_valid():
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        print(username,password)
 
+        # user_object =models.UserInfo.objects.filter(username=username,password=password).first()
+        user_object = models.UserInfo.objects.filter(Q(email=username) | Q(mobile_phone=username)).filter(password=password).first()
+        # 如果去数据库里拿到了
+        print(user_object)
+        if user_object:
+            return redirect('/web/index')
+        form.add_error('username','用户名或者密码错误')
+    # 校验没通过的话，则会显示错误信息
+    return render(request,'web/login.html',{'form':form})
+```
 
+forms/account.py
 
+```python
+class LoginForm(BootstrapForm, forms.Form):
+    username = forms.CharField(label='邮箱或手机号')
+    password = forms.CharField(label='密码',widget=forms.PasswordInput(render_value=True))
+    code = forms.CharField(label='图片验证码')
 
+    def __init__(self,request,*args,**kwargs):
+        # super(LoginForm, self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
+        self.request = request
+
+    # 用户验证码的钩子函数
+    def clean_code(self):
+        # 读取用户输入的验证码
+        code = self.cleaned_data['code']
+
+        # 去session中获取自己的验证码
+        session_code = self.request.session.get('image_code')
+        print(session_code)
+        if not session_code:
+            raise ValidationError('验证码已过期，请重新获取')
+
+        if code.strip().upper() != session_code.strip().upper():
+            raise ValidationError('验证码输入错误')
+
+        return code
+
+    def clean_password(self):
+        pwd = self.cleaned_data['password']
+        # 加密，返回
+        return md5(pwd)
+```
+
+表单提交的话，在登陆时，如果手机号或者验证码输入错误，提交时密码会置空，解决办法如下：
+
+```python
+    password = forms.CharField(label='密码',widget=forms.PasswordInput(render_value=True))
+```
+
+#### 3.5.页面联动
+
+index.html
+
+```html
+{% extends 'web/layout/basic.html' %}
+{% load static %}
+{% block title %}首页{% endblock %}
+{% block css %}
+    <style>
+        img {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div>
+        <img src="{% static 'web/img/index/index-1.png' %}" alt="">
+        <img src="{% static 'web/img/index/index-2.png' %}" alt="">
+        <img src="{% static 'web/img/index/index-3.png' %}" alt="">
+        <img src="{% static 'web/img/index/index-4.png' %}" alt="">
+    </div>
+{% endblock %}
+```
+
+basic.html
+
+```html
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'web/plugin/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/plugin/font-awesome/css/font-awesome.min.css' %}">
+
+    <style>
+        .navbar-default {
+            border-radius: 0;
+        }
+    </style>
+
+    {% block css %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container">            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+                <a class="navbar-brand" href="{% url 'web:index' %}">Tracer</a></div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <!-- <li class="active"><a href="#">产品功能 <span class="sr-only">(current)</span></a></li> -->
+                    <li><a href="#">产品功能</a></li>
+                    <li><a href="#">企业方案</a></li>
+                    <li><a href="#">帮助文档</a></li>
+                    <li><a href="#">价格</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url 'web:login' %}">登陆</a></li>
+                    <li><a href="{% url 'web:register' %}">注册</a></li>
+                    <li><a href="#">Link</a></li>
+                    <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                            aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">管理中心</a></li>
+{#                            <li><a href="#">Another action</a></li>#}
+{#                            <li><a href="#">Something else here</a></li>#}
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">退出</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+{% block content %}{% endblock %}
+
+<script src="{% static 'web/js/jquery-3.4.1.min.js' %}"></script>
+<script src="{% static 'web/plugin/bootstrap/js/bootstrap.js' %}"></script>
+
+{% block js %}{% endblock %}
+
+</body>
+</html>
+```
+
+保存用户登陆的信息
+
+```python
+        if user_object:
+            # 登陆成功
+            request.session['user_id'] = user_object.id
+            # 用户信息保存两周
+            request.session.set_expiry(60*60*24*14)
+            return redirect('/web/index')
+```
+
+#### 3.6.用户登陆状态校验
+
+使用中间件
+
+web/middleware/auth.py
+
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
+
+@time: 2021-10-04 20:37
+@func: 用户登陆状态校验
+
+'''
+
+from django.utils.deprecation import MiddlewareMixin
+from web import models
+
+class AuthMiddleware(MiddlewareMixin):
+
+    def process_request(self, request):
+        # 如果用户已登陆，则在request中赋值，否则设置为0
+        user_id = request.session.get('user_id',0)
+
+        user_object = models.UserInfo.objects.filter(id=user_id).first()
+        request.tracer = user_object
+```
+
+settings.py中配置
+
+```python
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'web.middleware.auth.AuthMiddleware',
+]
+
+```
+
+basic.html进行登陆状态判断
+
+```python
+            <ul class="nav navbar-nav navbar-right">
+                {% if request.tracer %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ request.tracer.username }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">管理中心</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{% url 'web:logout' %}">退出</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'web:login' %}">登陆</a></li>
+                    <li><a href="{% url 'web:register' %}">注册</a></li>
+                {% endif %}
+            </ul>
+```
+
+加入退出功能
+
+```python
+# 用户退出
+def logout(request):
+    request.session.flush()
+    return redirect('/web/index')
+```
+
+## Day05.今日概要
+
+### 今日概要
+
+- django写离线脚本
+- 探讨业务
+- 设计表结构
+- 我的表结构
+- 功能实现
+  - 查看项目列表
+  - 创建项目
+  - 星标项目
+
+### 1.django离线脚本
 
 
 

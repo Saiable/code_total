@@ -82,6 +82,9 @@ make
 
 跳过`make test`命令，执行`make install`安装命令
 
+- 执行`make test`时遇到`You need tcl 8.5 or newer in order to run the Redis test`
+  - 解决方案：`yum install tcl`
+
 #### 2.2.3. 安装目录
 
 默认安装在`/usr/local/bin`目录下
@@ -174,7 +177,7 @@ cp redis.conf /etc/redis.conf
 vi redis.conf
 ```
 
-按`\`进行搜索`daemonize`，然后修改
+按`/`进行搜索`daemonize`，然后修改
 
 进入/usr/local/bin目录下，指定配置文件启动redis
 
