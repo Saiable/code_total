@@ -50,7 +50,7 @@
 ## 数据库
 - [MongoDB]()
 - [Postgresql](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql.md)  |  [Postgresql数据库连接](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql数据库连接.md)
-- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/redis.md)  |  [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/redsi_conf.md)  |  [python操作redis]()
+- [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/database/redis/redis.md)  |  [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/database/redis/redsi_conf.md)  |  
 
 ## 计算机网络
 - [网络协议]()
