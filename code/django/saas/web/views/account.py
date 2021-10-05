@@ -85,7 +85,7 @@ def login(request):
             request.session['user_id'] = user_object.id
             # 用户信息保存两周
             request.session.set_expiry(60*60*24*14)
-            return redirect('/web/index')
+            return redirect('/web/index/')
         form.add_error('username','用户名或者密码错误')
     # 校验没通过的话，则会显示错误信息
     return render(request,'web/login.html',{'form':form})
