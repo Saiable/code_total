@@ -9,6 +9,8 @@
 
 from django.utils.deprecation import MiddlewareMixin
 from web import models
+from django.shortcuts import redirect
+from django.conf import settings
 
 class AuthMiddleware(MiddlewareMixin):
 
@@ -18,3 +20,14 @@ class AuthMiddleware(MiddlewareMixin):
 
         user_object = models.UserInfo.objects.filter(id=user_id).first()
         request.tracer = user_object
+        # 白名单，没有登陆都可以访问的url
+        '''
+            1.获取当前用户访问的url
+            2.检查url是否在白名单中，如果在则可以继续访问，否则进行判断是否已登录
+        '''
+        # print(request.path_info)
+        if request.path_info in settings.WHITE_REGEX_URL_LIST:
+            return
+        # 检查用户是否已登陆，已登陆继续往后走，未登陆则返回登陆页面
+        if not request.tracer:
+            return redirect('web:login')

@@ -147,6 +147,15 @@ CACHES = {
     }
 }
 
+# 无需登陆就可以访问的白名单
+WHITE_REGEX_URL_LIST = [
+    '/web/register/',
+    '/web/send_sms/',
+    '/web/login/sms/',
+    '/web/login/',
+    '/web/image_code/',
+    '/web/index/',
+]
 
 try:
     from .local_settings import *

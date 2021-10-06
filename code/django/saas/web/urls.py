@@ -1,5 +1,5 @@
 from django.conf.urls import url,include
-from web.views import account,home
+from web.views import account,home,project
 
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
@@ -9,5 +9,8 @@ urlpatterns = [
     url(r'^logout/$', account.logout, name='logout'),
     url(r'^image_code/$', account.image_code, name='image_code'),
     url(r'^index/$', home.index, name='index'),
+
+    # 项目管理
+    url(r'^project/list$', project.project_list, name='project_list'),
 
 ]

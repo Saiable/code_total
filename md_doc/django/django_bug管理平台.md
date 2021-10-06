@@ -2846,7 +2846,7 @@ def logout(request):
 
 ### 1.django离线脚本
 
-
+理解为什么要用离线脚本，以及什么时候需要使用
 
 ```
 django-框架
@@ -2856,7 +2856,7 @@ django-框架
 
 在某个py文件中，对django项目做一些处理
 
-#### 1.1.实例1：使用离线脚本在用户表中插入数据
+#### 1.1.示例1：使用离线脚本在用户表中插入数据
 
 web/scripts/init_user.py
 
@@ -2888,31 +2888,584 @@ models.UserInfo.objects.create(username='testaa',email='jkjk@qq.com',mobile_phon
 
 查看web_userinfo表，新增了刚刚插入的数据
 
-#### 1.2.实例2：数据库中存储全国的省市县
+#### 1.2.示例2：数据库中存储全国的省市县
+
+#### 1.3.示例3：敏感字、词语（10w~20w）
+
+#### 1.3.示例4：saas免费版：1G、5个项目、10人
+
+### 2.探讨业务
+
+#### 2.1.价格策略
+
+| 分类   | 标题       | 价格/年 | 项目个数 | 项目成员 | 每个项目空间 | 单文件限制 | 创建时间 |
+| ------ | ---------- | ------- | -------- | -------- | ------------ | ---------- | -------- |
+| 免费版 | 个人免费版 | 0       | 5        | 5        | 20M          | 5M         |          |
+| 收费版 | VIP        | 199     | 20       | 100      | 50G          | 200M       |          |
+| 收费版 | VVIP       | 299     | 50       | 200      | 100G         | 1G         |          |
+| 其他   |            |         |          |          |              |            |          |
+
+注意：新用户注册拥有免费版的额度
+
+#### 2.2.用户
+
+| 用户名 | 手机号       | 密码 |
+| ------ | ------------ | ---- |
+| alex   | 123232323232 | 123  |
+| amy    | 123232323233 | 123  |
+| bruce  | 123232323234 | 123  |
+
+#### 2.3.交易（关联表）
+
+| ID   | 状态          | 用户 | 价格 | 实际支付 | 开始       | 结束       | 数量（年） | 订单号 |      |
+| ---- | ------------- | ---- | ---- | -------- | ---------- | ---------- | ---------- | ------ | ---- |
+| 1    | 已支付        | 1    | 1    | 0        | 2020-03-18 | null       | 0          | UY12   |      |
+| 2    | 已支付        | 2    | 1    | 0        | 2020-03-18 | null       | 0          | UY13   |      |
+| 3    | 已支付        | 3    | 1    | 0        | 2020-03-18 | null       | 0          | UY14   |      |
+| 4    | 已支付        | 2    | 2    | 199      | 2020-04-18 | 2021-04-18 | 1          | UY15   |      |
+| 5    | 未支付/已支付 | 3    | 3    | 299*2    | 2020-05-18 | 2022-05-18 | 2          | UY16   |      |
+
+`request.tracer = 交易对象`
+
+#### 2.4.创建存储
+
+基于腾讯对象存储COS存储数据
+
+#### 2.5.项目
+
+| ID   | 项目名称 | 描述 | 颜色    | 星标 | 参与人数 | 创建者 | 已使用空间 |      |      |
+| ---- | -------- | ---- | ------- | ---- | -------- | ------ | ---------- | ---- | ---- |
+| 1    | CRM      | des  | #cccccc | true | 5        | 3      | 5M         |      |      |
+| 2    | saas     |      |         |      |          |        |            |      |      |
+
+#### 2.6.项目参与者
+
+| ID   | 项目 | 用户 | 星标 |
+| ---- | ---- | ---- | ---- |
+| 1    | 1    | 1    | true |
+| 2    | 2    | 2    |      |
+
+### 3.任务
+
+#### 3.1.创建相应表结构
+
+models.py
+
+```python
+from django.db import models
+
+# Create your models here.
+class UserInfo(models.Model):
+    username = models.CharField(verbose_name='用户名',max_length=32,db_index=True)
+    email = models.EmailField(verbose_name='邮箱',max_length=32)
+    mobile_phone = models.CharField(verbose_name='手机号',max_length=32)
+    password = models.CharField(verbose_name='密码',max_length=32)
+
+class PricePolicy(models.Model):
+    # 价格策略
+    category_choices = (
+        (1,'免费版'),
+        (2,'收费版'),
+        (3,'其他'),
+    )
+
+    category = models.SmallIntegerField(verbose_name='收费类型',default=2,choices=category_choices)
+    title = models.CharField(verbose_name='标题',max_length=32)
+    price = models.PositiveIntegerField(verbose_name='价格',null=True,blank=True)
+
+    project_num = models.PositiveIntegerField(verbose_name='项目数')
+    project_member = models.PositiveIntegerField(verbose_name='项目成员数')
+    project_space = models.PositiveIntegerField(verbose_name='单项目空间')
+    per_file_size = models.PositiveIntegerField(verbose_name='单文件大小（M）')
+
+    create_datetime = models.DateTimeField(verbose_name='创建时间',auto_now_add=True)
+
+class Transaction(models.Model):
+    '''交易记录'''
+    status_choice = (
+        (1,'未支付'),
+        (2,'已支付'),
+    )
+
+    status = models.SmallIntegerField(verbose_name='状态',choices=status_choice)
+
+    order = models.CharField(verbose_name='订单号',max_length=64,unique=True) # 唯一索引
+
+    user = models.ForeignKey(verbose_name='用户',to='UserInfo')
+    price_policy = models.ForeignKey(verbose_name='价格策略',to='PricePolicy')
+
+    count = models.IntegerField(verbose_name='数量（年）',help_text='0表示无限制')
+
+    price = models.IntegerField(verbose_name='实际支付价格')
+
+    start_datetime = models.DateTimeField(verbose_name='开始时间',null=True,blank=True)
+    end_datetime = models.DateTimeField(verbose_name='结束时间',null=True,blank=True)
+
+    create_datetime = models.DateTimeField(verbose_name='创建时间',auto_now_add=True)
+
+class Project(models.Model):
+    '''项目表'''
+    COLOR_CHOICES = (
+        (1,'#A02128'),
+        (2,'#D15B8F'),
+        (3,'#DD7907'),
+        (4,'#D2B773'),
+        (5,'#28713E'),
+        (6,'#154889'),
+        (7,'#8F4E35'),
+    )
+    name = models.CharField(verbose_name='项目表',max_length=32)
+    color = models.SmallIntegerField(verbose_name='颜色',choices=COLOR_CHOICES,default=1)
+    desc = models.CharField(verbose_name='项目描述',max_length=255,null=True,blank=True)
+    use_space = models.BigIntegerField(verbose_name='项目已使用空间',default=0)
+    star = models.BooleanField(verbose_name='星标',default=False)
+
+    # bucket = models.CharField(verbose_name='腾讯对象存储桶',default=1)
+    # region = models.CharField(verbose_name='腾讯对象存储桶区域',max_length=32)
+
+    join_count = models.SmallIntegerField(verbose_name='参与人数',default=1)
+    creator = models.ForeignKey(verbose_name='创建者',to='UserInfo')
+    create_datetime = models.DateTimeField(verbose_name='创建时间',auto_now_add=True)
+
+    # 查询，可以省事儿
+    # 增加、删除、修改：无法完成
+    # project_user = models.ManyToManyField(to='UserInfo',through='ProjectUser',through_fields=('projects','user'))
+
+class ProjectUser(models.Model):
+    '''项目参与者'''
+    user = models.ForeignKey(verbose_name='参与者',to='UserInfo',related_name='projects')
+    projects = models.ForeignKey(verbose_name='项目',to='Project')
+
+    invitee = models.ForeignKey(verbose_name='邀请者',to='UserInfo',related_name='invites',null=True,blank=True)
+
+    star = models.BooleanField(verbose_name='星标',default=True)
+
+    create_time = models.DateTimeField(verbose_name='加入时间',auto_now_add=True)
+
+```
+
+反向关联表
+
+```python
+obj = UserInfo.objects.filter(id=1)
+obj.projectuser_set.all()
+# 一张表有一个以上的ForeignKey时，需要加related_name以供反向关联
+obj.projects.all()
+```
+
+#### 3.2.离线脚本
+
+- 创建价格策略【免费版】
+
+| 分类   | 标题       | 价格/年 | 项目个数 | 项目成员 | 每个项目空间 | 单文件限制 | 创建时间 |
+| ------ | ---------- | ------- | -------- | -------- | ------------ | ---------- | -------- |
+| 免费版 | 个人免费版 | 0       | 3        | 2        | 20M          | 5M         |          |
+
+price字段允许为空的，models中的字段需要加上`null=True,blank=True`
+
+#### 3.3.用户注册【改】
+
+- 之前：注册成功，只是新建用户
+- 现在：
+  - 新建用户
+  - 新建交易记录【免费版】
+
+views/account.py
+
+```python
+def register(request):
+    if request.method == 'GET':
+        form = RegisterModelForm()
+        return render(request, 'web/register.html', {'form': form})
+    # print(request.POST)
+    form = RegisterModelForm(data=request.POST)
+    if form.is_valid():
+        # print(form.cleaned_data)
+        # 验证通过，写入数据库，密码要是密文
+        instance = form.save()
+        policy_object = models.PricePolicy.objects.filter(category=1,title='个人免费版').first()
+        #创建交易记录
+        models.Transaction.objects.create(
+            status=2,
+            order=str(uuid.uuid4()),
+            user=instance,
+            price_policy=policy_object,
+            count=0,
+            price=0,
+            start_datetime=datetime.datetime.now()
+        )
+        # data = form.cleaned_data
+        # data.pop('code')
+        # data.pop('confirm_password')
+        # instance = models.UserInfo.objects.create(**data)
+        return JsonResponse({'status': True,'data':'/web/login/'})
+    else:
+        # print(form.errors)
+        return JsonResponse({'status': False, 'error': form.errors})
+    return JsonResponse({})
+```
+
+#### 3.4.添加项目
+
+##### 3.4.1.项目列表母版+样式
+
+manage.html
+
+```html
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'web/plugin/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/plugin/font-awesome/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/css/manage.css' %}">
+
+
+    {% block css %}{% endblock %}
+</head>
+
+<body>
+<nav class="navbar navbar-av">
+    <div class="container-fluid">            <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+            <a class="navbar-brand" href="{% url 'web:project_list' %}">Tracer</a></div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">项目 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">One more separated link</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">工作台</a></li>
+                <li><a href="#">日历</a></li>
+                <li><a href="#"><i class="fa fa-bell-o" aria-hidden="true"></i></a></li>
+                <li><a href="#"><i class="fa fa-bookmark" aria-hidden="true"></i></a></li>
+
+                {% if request.tracer %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">{{ request.tracer.username }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'web:index' %}">回到官网</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{% url 'web:logout' %}">退出</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'web:login' %}">登陆</a></li>
+                    <li><a href="{% url 'web:register' %}">注册</a></li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+{% block content %}{% endblock %}
+
+<script src="{% static 'web/js/jquery-3.4.1.min.js' %}"></script>
+<script src="{% static 'web/plugin/bootstrap/js/bootstrap.js' %}"></script>
+
+{% block js %}{% endblock %}
+
+</body>
+</html>
+```
+
+manage.css
+
+```css
+body {
+    margin: 0;
+    font-weight: 200;
+}
+
+@media (min-width: 1500px) {
+    .container {
+        width: 1400px;
+    }
+}
+
+.navbar {
+    border-radius: 0;
+    margin-bottom: 0;
+    color: #ffffff;
+    height: 52px;
+}
+
+@media (min-width: 900px) {
+    .navbar-header {
+        float: left;
+    }
+}
+
+.navbar-av {
+    background-color: #499ef3;
+    border-color: #499ef3;
+}
+
+.navbar-av .navbar-brand {
+    color: #ffffff;
+    margin: 0 15px;
+}
+
+.navbar-av .navbar-brand:hover,
+.navbar-av .navbar-brand:focus {
+    color: #ffffff;
+    background-color: #4dabff;
+}
+
+.navbar-av .navbar-text {
+    color: #ffffff;
+}
+
+.navbar-av .navbar-nav {
+    margin: 0 -15px;
+
+}
+
+.navbar-av .navbar-nav > li {
+    z-index: 1001;
+
+}
+
+.navbar-av .navbar-nav > li > a {
+    color: #ffffff;
+    background-color: #499ef3;
+    padding-left: 13px;
+    padding-right: 13px;
+
+}
+
+.navbar-av .navbar-nav > li > a:hover,
+.navbar-av .navbar-nav > li > a:focus {
+    color: #ffffff;
+    background-color: #4dabff;
+
+}
+
+.navbar-av .navbar-nav > .active > a,
+.navbar-av .navbar-nav > .active > a:hover,
+.navbar-av .navbar-nav > .active > a:focus {
+    color: #ffffff;
+    background-color: #4dabff;
+
+}
+
+.navbar-av .navbar-nav > .disabled > a,
+.navbar-av .navbar-nav > .disabled > a:hover,
+.navbar-av .navbar-nav > .disabled > a:focus {
+    color: #ffffff;
+    background-color: #4dabff;
+}
+
+.navbar-av .navbar-toggle {
+    border-color: #499ef3;
+}
+
+.navbar-av .navbar-toggle:hover,
+.navbar-av .navbar-toggle:focus {
+    background-color: #4dabff;
+}
+
+.navbar-av .navbar-toggle .icon-bar {
+    background-color: #ffffff;
+}
+
+.navbar-av .navbar-collapse,
+.navbar-av .navbar-form {
+    border-color: #e7e7e7;
+}
+
+.navbar-av .navbar-nav > .open > a,
+.navbar-av .navbar-nav > .open > a:hover,
+.navbar-av .navbar-nav > .open > a:focus {
+    color: #ffffff;
+    background-color: #4dabff;
+}
+
+@media (max-width: 767px) {
+    .navbar-av .navbar-nav .open .dropdown-menu {
+        padding: 0;
+    }
+
+    .navbar-av .navbar-nav .open .dropdown-menu > li > a {
+        color: #ffffff;
+        background-color: #499ef3;
+    }
+
+    .navbar-av .navbar-nav .open .dropdown-menu > li > a:hover,
+    .navbar-av .navbar-nav .open .dropdown-menu > li > a:focus {
+        color: #ffffff;
+        background-color: #4dabff;
+    }
+
+    .navbar-av .navbar-nav .open .dropdown-menu > .active > a,
+    .navbar-av .navbar-nav .open .dropdown-menu > .active > a:hover,
+    .navbar-av .navbar-nav .open .dropdown-menu > .active > a:focus {
+        color: #ffffff;
+        background-color: #4dabff;
+    }
+
+    .navbar-av .navbar-nav .open .dropdown-menu > .disabled > a,
+    .navbar-av .navbar-nav .open .dropdown-menu > .disabled > a:hover,
+    .navbar-av .navbar-nav .open .dropdown-menu > .disabled > a:focus {
+        color: #ffffff;
+        background-color: #4dabff;
+    }
+}
+
+.navbar-av .navbar-link {
+    color: #ffffff;
+}
+
+.navbar-av .navbar-link:hover {
+    color: #ffffff;
+}
+
+.navbar-av .btn-link {
+    color: #ffffff;
+}
+
+.navbar-av .btn-link:hover,
+.navbar-av .btn-link:focus {
+    color: #ffffff;
+}
+
+.navbar-av .btn-link[disabled]:hover,
+fieldset[disabled] .navbar-av .btn-link:hover,
+.navbar-av .btn-link[disabled]:focus,
+fieldset[disabled] .navbar-av .btn-link:focus {
+    color: #ffffff;
+}
+
+.navbar-av .navbar-nav > li > .sep{
+    padding: 15px 5px;display: inline-block
+}
+
+.dropdown-menu>li{
+    padding: 0 5px;
+    color: black;
+}
+```
+
+project_list.html
+
+```html
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+    <style>
+        .project {
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid project">
+        <a href="#" class="btn btn-primary"><i class="fa fa-plus-circle"></i> 创建项目</a>
+    </div>
+{% endblock %}
+```
+
+- 后台：登陆成功之后才可以访问
+- 官网：都可以访问
+- 通过 中间件+白名单，对后台管理的权限，进行处理
+
+settings.py
+
+```python
+# 无需登陆就可以访问的白名单
+WHITE_REGEX_URL_LIST = [
+    '/web/register/',
+    '/web/send_sms/',
+    '/web/login/sms/',
+    '/web/login/',
+    '/web/image_code/',
+    '/web/index/',
+]
+```
+
+middleware/auth.py
+
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
+
+@time: 2021-10-04 20:37
+@func: 用户登陆状态校验
+
+'''
+
+from django.utils.deprecation import MiddlewareMixin
+from web import models
+from django.shortcuts import redirect
+from django.conf import settings
+
+class AuthMiddleware(MiddlewareMixin):
+
+    def process_request(self, request):
+        # 如果用户已登陆，则在request中赋值，否则设置为0
+        user_id = request.session.get('user_id',0)
+
+        user_object = models.UserInfo.objects.filter(id=user_id).first()
+        request.tracer = user_object
+        # 白名单，没有登陆都可以访问的url
+        '''
+            1.获取当前用户访问的url
+            2.检查url是否在白名单中，如果在则可以继续访问，否则进行判断是否已登录
+        '''
+        # print(request.path_info)
+        if request.path_info in settings.WHITE_REGEX_URL_LIST:
+            return
+        # 检查用户是否已登陆，已登陆继续往后走，未登陆则返回登陆页面
+        if not request.tracer:
+            return redirect('web:login')
+```
+
+- 当前拥有的价格策略（额度）
+
+##### 3.4.2.添加
 
 
 
+##### 3.4.3.查看项目列表
 
 
 
+##### 3.4.4.星标
 
 
 
+#### 3.5.展示项目
+
+- 展示
+- 我创建的
+- 我参与的
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+#### 3.6.星标项目
 
 
 

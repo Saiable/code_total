@@ -7,6 +7,8 @@ from web import models
 from utils.image_code import check_code
 from io import BytesIO
 from django.db.models import Q
+import uuid
+import datetime
 
 def image_code(request):
     image_object ,code = check_code()
@@ -25,6 +27,17 @@ def register(request):
         # print(form.cleaned_data)
         # 验证通过，写入数据库，密码要是密文
         instance = form.save()
+        policy_object = models.PricePolicy.objects.filter(category=1,title='个人免费版').first()
+        #创建交易记录
+        models.Transaction.objects.create(
+            status=2,
+            order=str(uuid.uuid4()),
+            user=instance,
+            price_policy=policy_object,
+            count=0,
+            price=0,
+            start_datetime=datetime.datetime.now()
+        )
         # data = form.cleaned_data
         # data.pop('code')
         # data.pop('confirm_password')
