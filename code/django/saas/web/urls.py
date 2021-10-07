@@ -10,7 +10,20 @@ urlpatterns = [
     url(r'^image_code/$', account.image_code, name='image_code'),
     url(r'^index/$', home.index, name='index'),
 
-    # 项目管理
+    # 项目列表
     url(r'^project/list$', project.project_list, name='project_list'),
+    url(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star, name='project_star'),
+    url(r'^project/unstar/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_unstar, name='project_unstar'),
+
+    # 项目管理
+    url(r'^manage/(?P<project_id>\d+)/',include([
+        url(r'^dashboard/$', project.project_list, name='project_list'),
+        url(r'^issues/$', project.project_list, name='project_list'),
+        url(r'^statistics/$', project.project_list, name='project_list'),
+        url(r'^file/$', project.project_list, name='project_list'),
+        url(r'^wiki/$', project.project_list, name='project_list'),
+        url(r'^setting/$', project.project_list, name='project_list'),
+
+    ],None)),
 
 ]

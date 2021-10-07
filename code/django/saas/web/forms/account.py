@@ -170,8 +170,8 @@ class SendSmsForm(forms.Form):
         # 写redis(django-redis)
 
         conn = get_redis_connection()
-        # conn.set(mobile_phone, code, ex=60)
-        conn.set(mobile_phone, code)
+        conn.set(mobile_phone, code, ex=60)
+        # conn.set(mobile_phone, code)
 
 
         return mobile_phone

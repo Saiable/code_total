@@ -11,15 +11,26 @@ from django.utils.deprecation import MiddlewareMixin
 from web import models
 from django.shortcuts import redirect
 from django.conf import settings
+import datetime
+
+
+class Trace(object):
+    def __init__(self):
+        self.user = None
+        self.price_policy = None
+
 
 class AuthMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
+
+        request.tracer = Trace()
+
         # 如果用户已登陆，则在request中赋值，否则设置为0
-        user_id = request.session.get('user_id',0)
+        user_id = request.session.get('user_id', 0)
 
         user_object = models.UserInfo.objects.filter(id=user_id).first()
-        request.tracer = user_object
+        request.tracer.user = user_object
         # 白名单，没有登陆都可以访问的url
         '''
             1.获取当前用户访问的url
@@ -29,5 +40,35 @@ class AuthMiddleware(MiddlewareMixin):
         if request.path_info in settings.WHITE_REGEX_URL_LIST:
             return
         # 检查用户是否已登陆，已登陆继续往后走，未登陆则返回登陆页面
-        if not request.tracer:
+        if not request.tracer.user:
             return redirect('web:login')
+
+        # 登陆成功后，访问后台管理时，获取当前用户所拥有的额度
+        # 方式一：免费额度在交易记录中存储
+
+        # 获取当前用户ID值最大（最近交易记录）
+        _object = models.Transaction.objects.filter(user=user_object, status=2).order_by('-id').first()
+        # 判断是否已过期
+        current_datetime = datetime.datetime.now()
+        if _object.end_datetime and _object.end_datetime < current_datetime:
+            # 过期
+            _object = models.Transaction.objects.filter(user=user_object, status=2, price_policy_category=1).first()
+        # request.transaction = _object
+        request.tracer.price_policy = _object.price_policy
+        '''
+
+        # 方式二：免费额度存储在配置文件
+        _object = models.Transaction.objects.filter(user=user_object, status=2).order_by('-id').first()
+        if not _object:
+            # 没有购买
+            request.price_policy = models.PricePolicy.objects.filter(category=1, title='个人免费版').first()
+        else:
+            # 付费版
+            current_datetime = datetime.datetime.now()
+            if _object.end_datetime and _object.end_datetime < current_datetime:
+                # 过期
+                request.price_policy = models.PricePolicy.objects.filter(category=1, title='个人免费版').first()
+            else:
+                request.price_policy = _object.price_policy
+
+        '''

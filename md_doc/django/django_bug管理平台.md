@@ -3445,17 +3445,284 @@ class AuthMiddleware(MiddlewareMixin):
 
 - 当前拥有的价格策略（额度）
 
+auth.py
+
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
+
+@time: 2021-10-04 20:37
+@func: 用户登陆状态校验
+
+'''
+
+from django.utils.deprecation import MiddlewareMixin
+from web import models
+from django.shortcuts import redirect
+from django.conf import settings
+import datetime
+
+
+class Trace(object):
+    def __init__(self):
+        self.user = None
+        self.price_policy = None
+
+
+class AuthMiddleware(MiddlewareMixin):
+
+    def process_request(self, request):
+
+        request.tracer = Trace()
+
+        # 如果用户已登陆，则在request中赋值，否则设置为0
+        user_id = request.session.get('user_id', 0)
+
+        user_object = models.UserInfo.objects.filter(id=user_id).first()
+        request.tracer.user = user_object
+        # 白名单，没有登陆都可以访问的url
+        '''
+            1.获取当前用户访问的url
+            2.检查url是否在白名单中，如果在则可以继续访问，否则进行判断是否已登录
+        '''
+        # print(request.path_info)
+        if request.path_info in settings.WHITE_REGEX_URL_LIST:
+            return
+        # 检查用户是否已登陆，已登陆继续往后走，未登陆则返回登陆页面
+        if not request.tracer:
+            return redirect('web:login')
+
+        # 登陆成功后，访问后台管理时，获取当前用户所拥有的额度
+        # 方式一：免费额度在交易记录中存储
+
+        # 获取当前用户ID值最大（最近交易记录）
+        _object = models.Transaction.objects.filter(user=user_object, status=2).order_by('-id').first()
+        # 判断是否已过期
+        current_datetime = datetime.datetime.now()
+        if _object.end_datetime and _object.end_datetime < current_datetime:
+            # 过期
+            _object = models.Transaction.objects.filter(user=user_object, status=2, price_policy_category=1).first()
+        # request.transaction = _object
+        request.tracer.price_policy = _object.price_policy
+        '''
+
+        # 方式二：免费额度存储在配置文件
+        _object = models.Transaction.objects.filter(user=user_object, status=2).order_by('-id').first()
+        if not _object:
+            # 没有购买
+            request.price_policy = models.PricePolicy.objects.filter(category=1, title='个人免费版').first()
+        else:
+            # 付费版
+            current_datetime = datetime.datetime.now()
+            if _object.end_datetime and _object.end_datetime < current_datetime:
+                # 过期
+                request.price_policy = models.PricePolicy.objects.filter(category=1, title='个人免费版').first()
+            else:
+                request.price_policy = _object.price_policy
+
+        '''
+
+```
+
+account.py
+
+```python
+def register(request):
+    if request.method == 'GET':
+        form = RegisterModelForm()
+        return render(request, 'web/register.html', {'form': form})
+    # print(request.POST)
+    form = RegisterModelForm(data=request.POST)
+    if form.is_valid():
+        # print(form.cleaned_data)
+        # 验证通过，写入数据库，密码要是密文
+        instance = form.save()
+        policy_object = models.PricePolicy.objects.filter(category=1,title='个人免费版').first()
+
+        # 创建交易记录
+        # 方式一
+        models.Transaction.objects.create(
+            status=2,
+            order=str(uuid.uuid4()),
+            user=instance,
+            price_policy=policy_object,
+            count=0,
+            price=0,
+            start_datetime=datetime.datetime.now()
+        )
+
+        # 方式二
+        # 不用写
+
+
+        # data = form.cleaned_data
+        # data.pop('code')
+        # data.pop('confirm_password')
+        # instance = models.UserInfo.objects.create(**data)
+        return JsonResponse({'status': True,'data':'/web/login/'})
+    else:
+        # print(form.errors)
+        return JsonResponse({'status': False, 'error': form.errors})
+    return JsonResponse({})
+```
+
+
+
 ##### 3.4.2.添加
 
+forms/project.py
 
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
 
-##### 3.4.3.查看项目列表
+@time: 2021-10-07 9:01
+@func:
 
+'''
 
+from django import forms
+from web.forms.bootstrap import BootstrapForm
+from web import models
+from django.core.exceptions import ValidationError
 
-##### 3.4.4.星标
+class ProjectModelForms(BootstrapForm, forms.ModelForm):
+    # desc = forms.CharField(widget=forms.Textarea())
 
+    class Meta:
+        model = models.Project
+        fields = ['name', 'color', 'desc']
+        widgets = {
+            'desc': forms.Textarea
+        }
 
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+
+    def clean_name(self):
+        '''项目校验'''
+        name = self.cleaned_data['name']
+        # 1.当前用户是否已经创建过此项目
+        exists = models.Project.objects.filter(name=name,creator=self.request.tracer.user).exists()
+        if exists:
+            raise ValidationError('项目名已存在')
+        # 2.当前用户是否还有额度进行创建项目
+        # 最多创建N个项目
+        max_num = self.request.tracer.price_policy.project_num
+        # 现在已创建多少项目
+        count = models.Project.objects.filter(creator=self.request.tracer.user).count()
+
+        if count >= max_num:
+            raise ValidationError('项目个数超限，请购买套餐')
+        return name
+
+```
+
+template/web/project_list.html
+
+```python
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+    <style>
+        .project {
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid project">
+        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addModal"><i
+                class="fa fa-plus-circle"></i>
+            创建项目</a>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建项目</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                <span class="error-msg"></span>
+                            </div>
+                        {% endfor %}
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button id="btnSubmit" type="button" class="btn btn-primary">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(function () {
+            bindSubmit()
+        })
+
+        function bindSubmit() {
+            $('#btnSubmit').click(function () {
+                $.ajax({
+                    url: "{% url 'web:project_list' %}",
+                    type: "POST",
+                    data: $('#addForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            location.reload()
+                            //location.href = location.href
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}
+```
+
+views/project.py
+
+```python
+from django.shortcuts import render,HttpResponse,redirect
+from web.forms.project import ProjectModelForms
+from django.http import JsonResponse
+
+def project_list(request):
+    '''项目列表'''
+    # print(request.tracer.user)
+    # print(request.tracer.price_policy)
+    if request.method == 'GET':
+        form = ProjectModelForms(request)
+        return render(request,'web/project_list.html',{'form':form})
+    form = ProjectModelForms(request,data=request.POST)
+    if form.is_valid():
+        # 验证通过：项目名，颜色，描述，创建者
+        form.instance.creator = request.tracer.user
+        # 验证通过
+        form.save()
+        return JsonResponse({'status':True})
+    return JsonResponse({'status':False,'error':form.errors})
+```
 
 #### 3.5.展示项目
 
@@ -3463,9 +3730,811 @@ class AuthMiddleware(MiddlewareMixin):
 - 我创建的
 - 我参与的
 
+##### 3.5.1.数据
+
+1.从数据库中获取两部分数据
+
+​	我创建的所有项目：已星标、未星标
+
+​	我参与的所有项目：已星标、未星标
+
+2.提取已星标
+
+​	列表 = 循环 [我创建的所有项目] + [我参与的所有项目] 把已星标的数据提取
+
+得到三个列表：星标、创建、参与
+
+##### 3.5.2.样式
+
+project_list.html
+
+```html
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+    <style>
+        .project {
+            margin-top: 10px;
+        }
+
+        .panel-body {
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: left;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .panel-body > .item {
+            border-radius: 6px;
+            width: 228px;
+            border: 1px solid #dddddd;
+            margin: 20px 10px;
+
+        }
+
+        .panel-body > .item:hover {
+            border: 1px solid #f0ad4e;
+        }
+
+        .panel-body > .item > .title {
+            height: 104px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .panel-body > .item > .info {
+            padding: 10px 10px;
+
+            display: flex;
+            justify-content: space-between;
+
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            color: #8c8c8c;
+
+        }
+
+        .panel-body > .item > .info a {
+            text-decoration: none;
+        }
+
+        .panel-body > .item > .info .fa-star {
+            font-size: 18px;
+        }
+
+        .color-radio label {
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+        .color-radio input[type="radio"] {
+            display: none;
+        }
+
+        .color-radio input[type="radio"] + .cycle {
+            display: inline-block;
+            height: 25px;
+            width: 25px;
+            border-radius: 50%;
+            border: 2px solid #dddddd;
+        }
+
+        .color-radio input[type="radio"]:checked + .cycle {
+            border: 2px solid black;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid project">
+        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addModal"><i
+                class="fa fa-plus-circle"></i>
+            创建项目</a>
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-star" aria-hidden="true"></i> 星标</div>
+            <div class="panel-body">
+                {% for item in project_dict.star %}
+                    <div class="item">
+                        <a href="" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="#">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-list" aria-hidden="true"></i> 我创建的</div>
+            <div class="panel-body">
+                {% for item in project_dict.my %}
+                    <div class="item">
+                        <a href="" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="#">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #d5d5d5;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-handshake-o" aria-hidden="true"></i> 我参与的</div>
+            <div class="panel-body">
+                {% for item in project_dict.join %}
+                    <div class="item">
+                        <a href="" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="#">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #d5d5d5;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建项目</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                <span class="error-msg"></span>
+                            </div>
+                        {% endfor %}
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button id="btnSubmit" type="button" class="btn btn-primary">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(function () {
+            bindSubmit()
+        })
+
+        function bindSubmit() {
+            $('#btnSubmit').click(function () {
+                $.ajax({
+                    url: "{% url 'web:project_list' %}",
+                    type: "POST",
+                    data: $('#addForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            location.reload()
+                            //location.href = location.href
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}
+```
 
 
-#### 3.6.星标项目
+
+#### 3.6.星标项目(去除星标)
+
+##### 3.6.1.星标
+
+我创建的项目：Project的star设置为True
+
+我参与的项目：ProjectUser的star设置为True
+
+urls.py
+
+```python
+from django.conf.urls import url,include
+from web.views import account,home,project
+
+urlpatterns = [
+    url(r'^register/$', account.register, name='register'),
+    url(r'^send_sms/$', account.send_sms, name='send_sms'),
+    url(r'^login/sms/$', account.login_sms, name='login_sms'),
+    url(r'^login/$', account.login, name='login'),
+    url(r'^logout/$', account.logout, name='logout'),
+    url(r'^image_code/$', account.image_code, name='image_code'),
+    url(r'^index/$', home.index, name='index'),
+
+    # 项目管理
+    url(r'^project/list$', project.project_list, name='project_list'),
+    url(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star, name='project_star'),
+    # url(r'^project/list$', project.project_list, name='project_list'),
+
+]
+```
+
+views/project.py
+
+```python
+def project_star(request,project_type,project_id):
+    '''星标项目'''
+    if project_type == 'my':
+        models.Project.objects.filter(id=project_id,creator=request.tracer.user).update(star=True)
+        return redirect('web:project_list')
+    if project_type == 'join':
+        models.ProjectUser.objects.filter(id=project_id,creator=request.tracer.user).update(star=True)
+        return redirect('web:project_list')
+    return HttpResponse('请求错误')
+```
+
+
+
+##### 3.6.2.移除星标
+
+我创建的项目：Project的star设置为False
+
+我参与的项目：ProjectUser的star设置为False
+
+urls.py
+
+```python
+from django.conf.urls import url,include
+from web.views import account,home,project
+
+urlpatterns = [
+    url(r'^register/$', account.register, name='register'),
+    url(r'^send_sms/$', account.send_sms, name='send_sms'),
+    url(r'^login/sms/$', account.login_sms, name='login_sms'),
+    url(r'^login/$', account.login, name='login'),
+    url(r'^logout/$', account.logout, name='logout'),
+    url(r'^image_code/$', account.image_code, name='image_code'),
+    url(r'^index/$', home.index, name='index'),
+
+    # 项目管理
+    url(r'^project/list$', project.project_list, name='project_list'),
+    url(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star, name='project_star'),
+    url(r'^project/unstar/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_unstar, name='project_unstar'),
+
+]
+```
+
+views/project.py
+
+```python
+def project_star(request,project_type,project_id):
+    '''星标项目'''
+    if project_type == 'my':
+        models.Project.objects.filter(id=project_id,creator=request.tracer.user).update(star=True)
+        return redirect('web:project_list')
+    if project_type == 'join':
+        models.ProjectUser.objects.filter(id=project_id,creator=request.tracer.user).update(star=True)
+        return redirect('web:project_list')
+    return HttpResponse('请求错误')
+
+def project_unstar(request,project_type,project_id):
+    '''取消星标项目'''
+    if project_type == 'my':
+        models.Project.objects.filter(id=project_id,creator=request.tracer.user).update(star=False)
+        return redirect('web:project_list')
+    if project_type == 'join':
+        models.ProjectUser.objects.filter(id=project_id,creator=request.tracer.user).update(star=Fasle)
+        return redirect('web:project_list')
+    return HttpResponse('请求错误')
+```
+
+#### 3.7.颜色
+
+##### 3.7.1.color字段不应用bootstrap样式
+
+forms/bootstrap.py
+
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
+@author: huihui
+@time: 2021-09-27 6:44
+@func:初始化字段，给字段添加bootstrap类
+
+@time: 2021-10-7 13:14:42
+@func:修改：新增  bootstrap_class_exclude = [] 并进行判断
+    实例化时，可定义上述bootstrap_class_exclude = ['color'],就可以指定color字段不应用bootstrap样式
+'''
+class BootstrapForm(object):
+    bootstrap_class_exclude = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name in self.bootstrap_class_exclude:
+                continue
+            field.widget.attrs['class'] = 'form-control'
+            field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
+```
+
+##### 3.7.2.生成颜色选择框
+
+forms/project.py
+
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
+
+@time: 2021-10-07 9:01
+@func:
+
+'''
+
+from django import forms
+from web.forms.bootstrap import BootstrapForm
+from web import models
+from django.core.exceptions import ValidationError
+from web.forms.widgets import ColorRadioSelect
+
+class ProjectModelForms(BootstrapForm, forms.ModelForm):
+    # desc = forms.CharField(widget=forms.Textarea())
+    bootstrap_class_exclude = ['color']
+
+    class Meta:
+        model = models.Project
+        fields = ['name', 'color', 'desc']
+        widgets = {
+            'desc': forms.Textarea,
+            'color': ColorRadioSelect(attrs={'class':'color-radio'}),
+        }
+
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+
+    def clean_name(self):
+        '''项目校验'''
+        name = self.cleaned_data['name']
+        # 1.当前用户是否已经创建过此项目
+        exists = models.Project.objects.filter(name=name,creator=self.request.tracer.user).exists()
+        if exists:
+            raise ValidationError('项目名已存在')
+        # 2.当前用户是否还有额度进行创建项目
+        # 最多创建N个项目
+        max_num = self.request.tracer.price_policy.project_num
+        # 现在已创建多少项目
+        count = models.Project.objects.filter(creator=self.request.tracer.user).count()
+
+        if count >= max_num:
+            raise ValidationError('项目个数超限，请购买套餐')
+        return name
+
+```
+
+templates/widgets/color_radio
+
+radio.html
+
+```html
+{% with id=widget.attrs.id %}
+    <div{% if id %} id="{{ id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}>
+        {% for group, options, index in widget.optgroups %}
+            {% for option in options %}
+                <label {% if option.attrs.id %} for="{{ option.attrs.id }}"{% endif %} >
+                    {% include option.template_name with widget=option %}
+                </label>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endwith %}
+
+```
+
+radio_option.html
+
+```html
+{% include "widgets/color_radio/input.html" %}
+<span class="cycle" style="background-color:{{ option.label }}"></span>
+```
+
+input.html
+
+```html
+<input type="{{ widget.type }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "widgets/color_radio/attrs.html" %} />
+
+```
+
+attrs.html
+
+```html
+{% for name, value in widget.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}
+```
+
+input.html和attrs.html就是django自带的
+
+project_list.html
+
+```html
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+    <style>
+        .project {
+            margin-top: 10px;
+        }
+
+        .panel-body {
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: left;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .panel-body > .item {
+            border-radius: 6px;
+            width: 228px;
+            border: 1px solid #dddddd;
+            margin: 20px 10px;
+
+        }
+
+        .panel-body > .item:hover {
+            border: 1px solid #f0ad4e;
+        }
+
+        .panel-body > .item > .title {
+            height: 104px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .panel-body > .item > .info {
+            padding: 10px 10px;
+
+            display: flex;
+            justify-content: space-between;
+
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            color: #8c8c8c;
+
+        }
+
+        .panel-body > .item > .info a {
+            text-decoration: none;
+        }
+
+        .panel-body > .item > .info .fa-star {
+            font-size: 18px;
+        }
+
+        .color-radio label {
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+        .color-radio input[type="radio"] {
+            display: none;
+        }
+
+        .color-radio input[type="radio"] + .cycle {
+            display: inline-block;
+            height: 25px;
+            width: 25px;
+            border-radius: 50%;
+            border: 2px solid #dddddd;
+        }
+
+        .color-radio input[type="radio"]:checked + .cycle {
+            border: 2px solid black;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid project">
+        <div style="margin: 10px 0;">
+            <a class="btn btn-primary" data-toggle="modal" data-target="#addModal"><i
+                    class="fa fa-plus-circle"></i>
+                创建项目</a>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-star" aria-hidden="true"></i> 星标</div>
+            <div class="panel-body">
+                {% for item in project_dict.star %}
+                    <div class="item">
+                        <a href="" class="title"
+                           style="background-color: {{ item.value.get_color_display }};">{{ item.value.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="{% url 'web:project_unstar' project_type=item.type project_id=item.value.id %}">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                                </a>
+                                <span>{{ item.value.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.value.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-list" aria-hidden="true"></i> 我创建的</div>
+            <div class="panel-body">
+                {% for item in project_dict.my %}
+                    <div class="item">
+                        <a href="" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href="{% url 'web:project_star' project_type='my' project_id=item.id %}">
+                                    <i class="fa fa-star" aria-hidden="true" style="color: #d5d5d5;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-handshake-o" aria-hidden="true"></i> 我参与的</div>
+            <div class="panel-body">
+                {% for item in project_dict.join %}
+                    <div class="item">
+                        <a href="" class="title"
+                           style="background-color: {{ item.get_color_display }};">{{ item.name }}</a>
+                        <div class="info">
+                            <div>
+                                <a href=""{% url 'web:project_star' project_type='join' project_id=item.id %}"">
+                                <i class="fa fa-star" aria-hidden="true" style="color: #d5d5d5;"></i>
+                                </a>
+                                <span>{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa fa-user-o" aria-hidden="true"></i>
+                                <span>{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建项目</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                <span class="error-msg"></span>
+                            </div>
+                        {% endfor %}
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button id="btnSubmit" type="button" class="btn btn-primary">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(function () {
+            bindSubmit()
+        })
+
+        function bindSubmit() {
+            $('#btnSubmit').click(function () {
+                $.ajax({
+                    url: "{% url 'web:project_list' %}",
+                    type: "POST",
+                    data: $('#addForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            location.reload()
+                            //location.href = location.href
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0])
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}	
+```
+
+#### 3.8.切换菜单
+
+1.数据库中获取：
+
+​	我创建的
+
+​	我参与的
+
+2.循环显示
+
+3.当前页面需要显示/其他页面也需要显示[inclusion_tag]
+
+manage.html
+
+```html
+{% load static %}
+{% load project %}
+
+
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            {% all_project_list request %}
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">工作台</a></li>
+                <li><a href="#">日历</a></li>
+                <li><a href="#"><i class="fa fa-bell-o" aria-hidden="true"></i></a></li>
+                <li><a href="#"><i class="fa fa-bookmark" aria-hidden="true"></i></a></li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">{{ request.tracer.user.username }}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'web:index' %}">回到官网</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{% url 'web:logout' %}">退出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+```
+
+web/inclusion/all_project_list.html
+
+```html
+<ul class="nav navbar-nav">
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+           aria-expanded="false">项目 <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+            {% if my %}
+                <li><i class="fa fa-list" aria-hidden="true"></i> 我创建的项目</li>
+                {% for item in my %}
+                    <li><a href="#">{{ item.name }}</a></li>
+                {% endfor %}
+
+                <li role="separator" class="divider"></li>
+            {% endif %}
+
+            {% if join %}
+                <li><i class="fa fa-handshake-o" aria-hidden="true"></i> 我参与的项目</li>
+
+                {% for item in join %}
+                    <li><a href="#">{{ item.project.name }}</a></li>
+                {% endfor %}
+                <li role="separator" class="divider"></li>
+            {% endif %}
+            <li><a href="{% url 'web:project_list' %}">所有项目</a></li>
+        </ul>
+    </li>
+</ul>
+```
+
+templatetags/project.py
+
+```python
+#!/usr/bin/env python
+# encoding: utf-8
+'''
+
+@time: 2021-10-07 14:58
+@func:
+
+'''
+
+from django.template import Library
+from web import models
+
+
+register = Library()
+
+@register.inclusion_tag('web/inclusion/all_project_list.html')
+def all_project_list(request):
+    # 1.获取我创建的项目
+    my_project_list = models.Project.objects.filter(creator=request.tracer.user)
+
+    # 2.获取我参与的项目
+    join_project_list = models.ProjectUser.objects.filter(user=request.tracer.user)
+
+    return {'my': my_project_list,'join':join_project_list}
+```
+
+#### 3.9.项目管理
+
+##### 3.9.1.url规划
+
+```
+/manage/项目ID/dashboard
+/manage/项目ID/issues
+/manage/项目ID/statistics
+/manage/项目ID/file
+/manage/项目ID/wiki
+/manage/项目ID/setting
+```
 
 
 

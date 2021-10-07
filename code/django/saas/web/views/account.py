@@ -28,7 +28,9 @@ def register(request):
         # 验证通过，写入数据库，密码要是密文
         instance = form.save()
         policy_object = models.PricePolicy.objects.filter(category=1,title='个人免费版').first()
-        #创建交易记录
+
+        # 创建交易记录
+        # 方式一
         models.Transaction.objects.create(
             status=2,
             order=str(uuid.uuid4()),
@@ -38,6 +40,11 @@ def register(request):
             price=0,
             start_datetime=datetime.datetime.now()
         )
+
+        # 方式二
+        # 不用写
+
+
         # data = form.cleaned_data
         # data.pop('code')
         # data.pop('confirm_password')
