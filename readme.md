@@ -3,7 +3,7 @@
 
 ## 计算机网络
 
-- [网络基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/net/思科CCNA网络基础入门.md)
+- [网络基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/network/思科CCNA网络基础入门.md)
 
 ## 前端
 
