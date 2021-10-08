@@ -1,5 +1,5 @@
 from django.conf.urls import url,include
-from web.views import account,home,project
+from web.views import account,home,project,manage
 
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
@@ -17,13 +17,12 @@ urlpatterns = [
 
     # 项目管理
     url(r'^manage/(?P<project_id>\d+)/',include([
-        url(r'^dashboard/$', project.project_list, name='project_list'),
-        url(r'^issues/$', project.project_list, name='project_list'),
-        url(r'^statistics/$', project.project_list, name='project_list'),
-        url(r'^file/$', project.project_list, name='project_list'),
-        url(r'^wiki/$', project.project_list, name='project_list'),
-        url(r'^setting/$', project.project_list, name='project_list'),
-
-    ],None)),
+        url(r'^dashboard/$', manage.dashboard, name='dashboard'),
+        url(r'^issues/$', manage.issues, name='issues'),
+        url(r'^statistics/$', manage.statistics, name='statistics'),
+        url(r'^file/$', manage.file, name='file'),
+        url(r'^wiki/$', manage.wiki, name='wiki'),
+        url(r'^setting/$', manage.setting, name='setting'),
+    ],)),
 
 ]

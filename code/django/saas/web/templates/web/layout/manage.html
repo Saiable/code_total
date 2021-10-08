@@ -35,6 +35,12 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             {% all_project_list request %}
+
+            {% if request.tracer.project %}
+                <ul class="nav navbar-nav">
+                    <li><a href="#">概述</a></li>
+                </ul>
+            {% endif %}
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">工作台</a></li>
                 <li><a href="#">日历</a></li>
@@ -62,7 +68,9 @@
 <script src="{% static 'web/js/jquery-3.4.1.min.js' %}"></script>
 <script src="{% static 'web/plugin/bootstrap/js/bootstrap.js' %}"></script>
 
-{% block js %}{% endblock %}
+{% block js %}
+
+{% endblock %}
 
 </body>
 </html>
