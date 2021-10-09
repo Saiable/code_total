@@ -4863,6 +4863,7 @@ class Trace(object):
         self.price_policy = None
         self.project = None
 
+
 class AuthMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
@@ -4918,7 +4919,7 @@ class AuthMiddleware(MiddlewareMixin):
 
     def process_view(self, request, view, args, kwargs):
         # 判断url是否以manage开头
-        if not request.path_info.startswith('/manage'):
+        if not request.path_info.startswith('/web/manage/'):
             return
         # 判断project_id是我创建的 or 我参与的
         project_id = kwargs.get('project_id')
@@ -4932,22 +4933,136 @@ class AuthMiddleware(MiddlewareMixin):
         if project_user_object:
             request.tracer.project = project_user_object.project
             return
-
         return redirect('web:project_list')
 
 ```
 
 
 
+##### 3.9.3.修复页面小bug
+
+inclusion/project_list.html
+
+```html
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+       aria-expanded="false">项目 <span class="caret"></span></a>
+    <ul class="dropdown-menu">
+        {% if my %}
+            <li><i class="fa fa-list" aria-hidden="true"></i> 我创建的项目</li>
+            {% for item in my %}
+                <li><a href="#">{{ item.name }}</a></li>
+            {% endfor %}
+
+            <li role="separator" class="divider"></li>
+        {% endif %}
+
+        {% if join %}
+            <li><i class="fa fa-handshake-o" aria-hidden="true"></i> 我参与的项目</li>
+
+            {% for item in join %}
+                <li><a href="#">{{ item.project.name }}</a></li>
+            {% endfor %}
+            <li role="separator" class="divider"></li>
+        {% endif %}
+        <li><a href="{% url 'web:project_list' %}">所有项目</a></li>
+    </ul>
+</li>
+
+```
+
+manage.html
+
+```html
+            <ul class="nav navbar-nav">
+
+                {% all_project_list request %}
+
+                {% if request.tracer.project %}
+                    <li><a href="#">概述</a></li>
+                    <li><a href="#">wiki</a></li>
+                    <li><a href="#">配置</a></li>
+                {% endif %}
+            </ul>
+```
+
+##### 3.9.4.项目菜单默认选中
+
+每个的project_id保持一致
+
+manage.html
+
+```html
+                {% if request.tracer.project %}
+                    <li><a href="{% url 'web:dashboard' project_id=request.tracer.project.id %}">概述</a></li>
+                    <li><a href="{% url 'web:issues' project_id=request.tracer.project.id %}">问题</a></li>
+                    <li><a href="{% url 'web:wiki' project_id=request.tracer.project.id %}">wiki</a></li>
+
+                {% endif %}
+```
 
 
 
+改写上面的
 
+templatetags/project.py
 
+```python
+@register.inclusion_tag('web/inclusion/manage_menu_list.html')
+def manage_menu_list(request):
+    data_list = [
+        {'title': '概览','url': reverse('web:dashboard',kwargs={'project_id':request.tracer.project.id})},
+        {'title': '问题', 'url': reverse('web:issues', kwargs={'project_id': request.tracer.project.id})},
+        {'title': '统计', 'url': reverse('web:statistics', kwargs={'project_id': request.tracer.project.id})},
+        {'title': 'wiki', 'url': reverse('web:wiki', kwargs={'project_id': request.tracer.project.id})},
+        {'title': '文件', 'url': reverse('web:file', kwargs={'project_id': request.tracer.project.id})},
+        {'title': '配置', 'url': reverse('web:setting', kwargs={'project_id': request.tracer.project.id})},
+    ]
+    for item in data_list:
+        if request.path_info.startswith(item['url']):
+            item['class'] = 'active'
+    return {'data_list':data_list}
+```
 
+inclusion/manage_menu_list.html
 
+```html
+{#<li><a href="{% url 'web:dashboard' project_id=request.tracer.project.id %}">概述</a></li>#}
+{#<li><a href="{% url 'web:issues' project_id=request.tracer.project.id %}">问题</a></li>#}
+{#<li><a href="{% url 'web:wiki' project_id=request.tracer.project.id %}">wiki</a></li>#}
 
+{% for item in data_list %}
+    <li {% if item.class %} class="{{ item.class }}" {% endif %} > <a href="{{ item.url }}">{{ item.title }}</a></li>
+{% endfor %}
+```
 
+manage.html
+
+```html
+                {% if request.tracer.project %}
+                    {% manage_menu_list request %}
+                {% endif %}
+```
+
+#### 内容总结
+
+1.项目实现思路
+
+2.星标/取消星标
+
+3.inclusion_tag实现项目切换
+
+4.项目菜单
+
+- 中间件 process_view
+- 默认选中 inclusion_tag
+- 路由分发
+  - include("xxx.url")
+  - include([aa,bb])
+- 颜色选择
+  - 源码+扩展【实现】
+
+## Day06.今日概要
 
 
 

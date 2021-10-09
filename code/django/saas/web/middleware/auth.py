@@ -76,7 +76,7 @@ class AuthMiddleware(MiddlewareMixin):
 
     def process_view(self, request, view, args, kwargs):
         # 判断url是否以manage开头
-        if not request.path_info.startswith('/manage/'):
+        if not request.path_info.startswith('/web/manage/'):
             return
         # 判断project_id是我创建的 or 我参与的
         project_id = kwargs.get('project_id')

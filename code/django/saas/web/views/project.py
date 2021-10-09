@@ -60,6 +60,6 @@ def project_unstar(request,project_type,project_id):
         models.Project.objects.filter(id=project_id,creator=request.tracer.user).update(star=False)
         return redirect('web:project_list')
     if project_type == 'join':
-        models.ProjectUser.objects.filter(id=project_id,creator=request.tracer.user).update(star=Fasle)
+        models.ProjectUser.objects.filter(id=project_id,creator=request.tracer.user).update(star=False)
         return redirect('web:project_list')
     return HttpResponse('请求错误')
