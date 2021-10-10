@@ -5064,19 +5064,231 @@ manage.html
 
 ## Day06.今日概要
 
+**wiki**
+
+- 表结构设计
+- 快速开发
+- 应用markdown组件
+- 腾讯COS做上传
+
+### 1.表结构设计
+
+| ID   | 标题 | 内容 | 项目ID | 父ID |
+| ---- | ---- | ---- | ------ | ---- |
+| 1    |      |      |        | null |
+| 2    |      |      |        | 1    |
+|      |      |      |        |      |
+
+```python
+class Wiki(models.Model):
+    project = models.ForeignKey(verbose_name='项目',to='Project')
+    title = models.CharField(verbose_name='标题',max_length=32)
+    content = models.TextField(verbose_name='内容')
+
+    # 自关联
+    parent = models.ForeignKey(verbose_name='父文章',to='Wiki',null=True,blank=True,related_name='children')
+```
+
+### 2.快速开发
+
+#### 2.1.wiki首页展示
+
+将原来的视图函数分离出来，并修改对应的url 
+
+```python
+url(r'^wiki/$', wiki.wiki, name='wiki'),
+```
 
 
 
+wiki.html
+
+```html
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+    <style>
+        .panel-default {
+            margin-top: 10px;
+        }
+        .panel-body{
+            padding: 0;
+        }
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px;
+        }
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-book" aria-hidden="true"></i>wiki文档</div>
+            <div class="panel-body">
+                <div class="col-sm-3 title-list">
+                    目录
+                </div>
+                <div class="col-sm-9 content">
+                    <div style="text-align: center;margin-top: 50px">
+                        <h4>《{{ request.tracer.project.name }}》 wiki文档库</h4>
+                        <a href="#">
+                            <i class="fa fa-plus-circle"></i> 新建文章
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+{% endblock %}
+```
+
+修改下拉框的同步状态
+
+templatetags/prject.py
+
+传入request
+
+```python
+@register.inclusion_tag('web/inclusion/all_project_list.html')
+def all_project_list(request):
+    # 1.获取我创建的项目
+    my_project_list = models.Project.objects.filter(creator=request.tracer.user)
+
+    # 2.获取我参与的项目
+    join_project_list = models.ProjectUser.objects.filter(user=request.tracer.user)
+
+    return {'my': my_project_list,'join':join_project_list,'request':request}
+```
+
+all_project_list.html
+
+加入判断
+
+```html
+<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+       aria-expanded="false">项目 {% if request.tracer.project %} ({{ request.tracer.project.name }}) {% endif %} <span class="caret"></span></a>
+    
+```
+
+#### 2.2.添加文章
+
+新增url
+
+```python
+        url(r'^wiki/add/$', wiki.wiki_add, name='wiki_add'),
+
+```
+
+完善wiki.html
+
+```html
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+    <style>
+        .panel-default {
+            margin-top: 10px;
+        }
+
+        .panel-body {
+            padding: 0;
+        }
+
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px;
+        }
+
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+        }
+
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div>
+                    <i class="fa fa-book" aria-hidden="true"></i>wiki文档
+                </div>
+                <div class="function">
+                    <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                       class="btn btn-success btn-xs">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                    </a>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="col-sm-3 title-list">
+                    目录
+
+                </div>
+                <div class="col-sm-9 content">
+                    <div style="text-align: center;margin-top: 50px">
+                        <h4>《{{ request.tracer.project.name }}》 wiki文档库</h4>
+                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}">
+                            <i class="fa fa-plus-circle"></i> 新建文章
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+{% endblock %}
+```
+
+新增forms/wiki.py
+
+```python
+from django import forms
+from web.forms.bootstrap import BootstrapForm
+from web import models
+
+class WikiModelForm(BootstrapForm, forms.ModelForm):
+    class Meta:
+        model = models.Wiki
+        exclude = ['project',]
+```
 
 
 
+完善wiki_add视图
+
+```python
+def wiki_add(request,project_id):
+    '''添加文章'''
+    form = WikiModelForm()
+    return render(request,'web/wiki_add.html',{'form':form})
+```
+
+新增tempaltes/wiki_add.py
+
+```python
+```
 
 
 
+#### 2.3.预览文章
 
 
 
+#### 2.4.修改文章
 
+
+
+#### 2.5.删除文章
 
 
 
