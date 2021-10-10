@@ -20,6 +20,11 @@
             margin-left: -1px;
         }
 
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -27,27 +32,33 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div>
-                    <i class="fa fa-book" aria-hidden="true"></i>wiki文档
+                    <i class="fa fa-book" aria-hidden="true"></i> wiki文档
                 </div>
                 <div class="function">
                     <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
                        class="btn btn-success btn-xs">
-                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
                     </a>
                 </div>
             </div>
             <div class="panel-body">
                 <div class="col-sm-3 title-list">
-                    目录
+
 
                 </div>
                 <div class="col-sm-9 content">
-                    <div style="text-align: center;margin-top: 50px">
-                        <h4>《{{ request.tracer.project.name }}》 wiki文档库</h4>
-                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}">
-                            <i class="fa fa-plus-circle"></i> 新建文章
-                        </a>
-                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                <span class="error-msg">{{ field.errors.0 }}</span>
+                            </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary">提 交</button>
+                    </form>
                 </div>
             </div>
         </div>

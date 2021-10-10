@@ -5211,6 +5211,11 @@ all_project_list.html
             margin-left: -1px;
         }
 
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -5218,12 +5223,12 @@ all_project_list.html
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div>
-                    <i class="fa fa-book" aria-hidden="true"></i>wiki文档
+                    <i class="fa fa-book" aria-hidden="true"></i> wiki文档
                 </div>
                 <div class="function">
                     <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
                        class="btn btn-success btn-xs">
-                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
                     </a>
                 </div>
             </div>
@@ -5233,12 +5238,18 @@ all_project_list.html
 
                 </div>
                 <div class="col-sm-9 content">
-                    <div style="text-align: center;margin-top: 50px">
-                        <h4>《{{ request.tracer.project.name }}》 wiki文档库</h4>
-                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}">
-                            <i class="fa fa-plus-circle"></i> 新建文章
-                        </a>
-                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                <span class="error-msg">{{ field.errors.0 }}</span>
+                            </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary">提 交</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -5269,13 +5280,154 @@ class WikiModelForm(BootstrapForm, forms.ModelForm):
 ```python
 def wiki_add(request,project_id):
     '''添加文章'''
-    form = WikiModelForm()
-    return render(request,'web/wiki_add.html',{'form':form})
+    if request.method == 'GET':
+        form = WikiModelForm()
+        return render(request,'web/wiki_add.html',{'form':form})
+    form = WikiModelForm(request.POST)
+    if form.is_valid():
+        form.instance.prject = request.tracer.project
+        form.save()
+        url = reverse('wiki',kwargs={'prject_id':project_id})
+        return redirect(url)
+    return render(request, 'web/wiki_add.html', {'form': form})
 ```
 
-新增tempaltes/wiki_add.py
+优化models.py，新增`__str__`
 
 ```python
+class Wiki(models.Model):
+    project = models.ForeignKey(verbose_name='项目',to='Project',null=True,blank=True)
+    title = models.CharField(verbose_name='标题',max_length=32)
+    content = models.TextField(verbose_name='内容')
+
+    # 自关联
+    parent = models.ForeignKey(verbose_name='父文章',to='Wiki',null=True,blank=True,related_name='children')
+
+    def __str__(self):
+        return self.title
+```
+
+修复bug：其他项目里的文章，也能作为父级出现
+
+forms/wiki.py
+
+```python
+class WikiModelForm(BootstrapForm, forms.ModelForm):
+    class Meta:
+        model = models.Wiki
+        exclude = ['project',]
+    def __init__(self,request,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        total_data_list = [("","请选择"),]
+        data_list = models.Wiki.objects.filter(project=request.tracer.project).values_list('id','title')
+        total_data_list.extend(data_list)
+
+        self.fields['parent'].choices = total_data_list
+```
+
+**层级关系**
+
+通过ajax来请求数据，js操作css选择器来生成数据
+
+wiki.html
+
+```javascript
+{% block js %}
+    <script>
+        $(function () {
+            initCatalog()
+        })
+
+        function initCatalog() {
+            $.ajax({
+                url: "{% url 'web:wiki_catalog' project_id=request.tracer.project.id %}",
+                type: "GET",
+                dataType: "JSON",
+                success: function (res) {
+                    console.log(res)
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).append($("<ul>"))
+
+                            // 接收到后端传递的字典格式的数据
+                            if (!item.parent_id) {
+                                $("#catalog").append(li)
+                            } else {
+                                $("#id_" + item.parent_id).children("ul").append(li)
+                            }
+
+                        })
+                    } else {
+                        alert('初始化目录失败')
+                    }
+                }
+            })
+        }
+    </script>
+```
+
+多级目录展示部分存在问题
+
+父目录要提前出线：排序 + 字段（深度depth）
+
+| ID   | 标题 | 内容 | 项目ID | 父ID | 深度 |
+| ---- | ---- | ---- | ------ | ---- | ---- |
+| 1    |      |      |        | null | 1    |
+| 2    |      |      |        | 1    | 2    |
+
+models.py
+
+```python
+class Wiki(models.Model):
+    project = models.ForeignKey(verbose_name='项目',to='Project')
+    title = models.CharField(verbose_name='标题',max_length=32)
+    content = models.TextField(verbose_name='内容')
+    depth = models.IntegerField(verbose_name='深度',default=1)
+    # 自关联
+    parent = models.ForeignKey(verbose_name='父文章',to='Wiki',null=True,blank=True,related_name='children')
+
+    def __str__(self):
+        return self.title
+```
+
+form中也要排除depth字段的渲染
+
+```python
+    class Meta:
+        model = models.Wiki
+        exclude = ['project','depth',]
+```
+
+views/wiki.py
+
+```python
+def wiki_add(request,project_id):
+    '''添加文章'''
+    if request.method == 'GET':
+        form = WikiModelForm(request)
+        return render(request,'web/wiki_add.html',{'form':form})
+    form = WikiModelForm(request,data=request.POST)
+    if form.is_valid():
+        # 判断用户是否选择了父文章
+        if form.instance.parent:
+            form.instance.depth = form.instance.parent.depth + 1
+        else:
+            form.instance.depth = 1
+        form.instance.project = request.tracer.project
+        form.save()
+        url = reverse('web:wiki',kwargs={'project_id':project_id})
+        return redirect(url)
+    return render(request, 'web/wiki_add.html', {'form': form})
+
+def wiki_catalog(request,project_id):
+    '''wiki目录'''
+    # data = models.Wiki.objects.filter(project=request.tracer.project).values_list("id","title","parent_id")
+    # return JsonResponse({'status':True,'data':list(data)})
+    # vlaues_list输出的是元组格式，而values返回的是字典
+    data = models.Wiki.objects.filter(project=request.tracer.project).values("id","title","parent_id").order('depth','id')
+    # data = models.Wiki.objects.filter(project=request.tracer.project).values("id","title","parent_id")
+
+    return JsonResponse({'status':True,'data':list(data)})
 ```
 
 

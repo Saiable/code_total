@@ -20,6 +20,31 @@
             margin-left: -1px;
         }
 
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px;
+        }
+
+        .title-list ul {
+            padding-left: 15px;
+        }
+
+        .title-list ul a {
+            display: block;
+            padding: 5px 0;
+        }
+
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -27,18 +52,27 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div>
-                    <i class="fa fa-book" aria-hidden="true"></i>wiki文档
+                    <i class="fa fa-book" aria-hidden="true"></i> wiki文档
                 </div>
                 <div class="function">
                     <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
                        class="btn btn-success btn-xs">
-                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
                     </a>
                 </div>
             </div>
             <div class="panel-body">
                 <div class="col-sm-3 title-list">
-                    目录
+                    <ul id="catalog">
+                        {#                        <li><a href="">目录一</a>#}
+                        {#                            <ul>#}
+                        {#                                <li><a href="">aa</a></li>#}
+                        {#                                <li><a href="">bb</a></li>#}
+                        {#                            </ul>#}
+                        {#                        </li>#}
+                        {#                        <li><a href="">目录二</a></li>#}
+                        {#                        <li><a href="">目录三</a></li>#}
+                    </ul>
 
                 </div>
                 <div class="col-sm-9 content">
@@ -55,4 +89,38 @@
     </div>
 
 
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(function () {
+            initCatalog()
+        })
+
+        function initCatalog() {
+            $.ajax({
+                url: "{% url 'web:wiki_catalog' project_id=request.tracer.project.id %}",
+                type: "GET",
+                dataType: "JSON",
+                success: function (res) {
+                    console.log(res)
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).append($("<ul>"))
+
+                            // 接收到后端传递的字典格式的数据
+                            if (!item.parent_id) {
+                                $("#catalog").append(li)
+                            } else {
+                                $("#id_" + item.parent_id).children("ul").append(li)
+                            }
+
+                        })
+                    } else {
+                        alert('初始化目录失败')
+                    }
+                }
+            })
+        }
+    </script>
 {% endblock %}
