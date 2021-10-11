@@ -76,12 +76,18 @@
 
                 </div>
                 <div class="col-sm-9 content">
-                    <div style="text-align: center;margin-top: 50px">
-                        <h4>《{{ request.tracer.project.name }}》 wiki文档库</h4>
-                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}">
-                            <i class="fa fa-plus-circle"></i> 新建文章
-                        </a>
-                    </div>
+                    {% if wiki_object %}
+                        {{ wiki_object.content }}
+                    {% else %}
+                        <div style="text-align: center;margin-top: 50px">
+                            <h4>《{{ request.tracer.project.name }}》 wiki文档库</h4>
+                            <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}">
+                                <i class="fa fa-plus-circle"></i> 新建文章
+                            </a>
+                        </div>
+                    {% endif %}
+
+
                 </div>
             </div>
         </div>
@@ -93,6 +99,8 @@
 
 {% block js %}
     <script>
+        var WIKI_DETAIL_URL = "{% url 'web:wiki' project_id=request.tracer.project.id %}"
+
         $(function () {
             initCatalog()
         })
@@ -106,7 +114,8 @@
                     console.log(res)
                     if (res.status) {
                         $.each(res.data, function (index, item) {
-                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).append($("<ul>"))
+                            var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id
+                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).attr('href',href).append($("<ul>"))
 
                             // 接收到后端传递的字典格式的数据
                             if (!item.parent_id) {

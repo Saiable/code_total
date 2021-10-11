@@ -5,7 +5,13 @@ from web import models
 from django.http import JsonResponse
 def wiki(request, project_id):
     '''wiki的首页'''
-    return render(request, 'web/wiki.html')
+    wiki_id = request.GET.get('wiki_id')
+    if not wiki_id.isdecimal():
+        return render(request,'web/wiki.html')
+
+    wiki_object = models.Wiki.objects.filter(id=wiki_id,project_id=project_id).first()
+
+    return render(request, 'web/wiki.html', {'wiki_object':wiki_object})
 
 def wiki_add(request,project_id):
     '''添加文章'''

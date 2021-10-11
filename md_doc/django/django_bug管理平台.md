@@ -5368,7 +5368,7 @@ wiki.html
 
 多级目录展示部分存在问题
 
-父目录要提前出线：排序 + 字段（深度depth）
+父目录要提前出现：排序 + 字段（深度depth）
 
 | ID   | 标题 | 内容 | 项目ID | 父ID | 深度 |
 | ---- | ---- | ---- | ------ | ---- | ---- |
@@ -5429,6 +5429,40 @@ def wiki_catalog(request,project_id):
 
     return JsonResponse({'status':True,'data':list(data)})
 ```
+
+**点击目录查看详细**
+
+- url设计问题
+  - 和wiki共用一个url
+
+- 文章id如何获取
+
+  - 生成标签的同时，也生成href
+
+  - href字段由project_id+wiki_id+itm.id拼接
+
+    ```javascript
+    var WIKI_DETAIL_URL = "{% url 'web:wiki' project_id=request.tracer.project.id %}"
+    
+    
+    var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id
+    var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).attr('href',href).append($("<ul>"))
+    ```
+
+- 视图函数根据request是否含有wiki_id字段，来决定显示内容
+
+  ```python
+  def wiki(request, project_id):
+      '''wiki的首页'''
+      wiki_id = request.GET.get('wiki_id')
+      if wiki_id:
+          print('detail')
+      else:
+          print('index')
+      return render(request, 'web/wiki.html')
+  ```
+
+  
 
 
 
