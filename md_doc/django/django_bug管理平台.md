@@ -5446,7 +5446,8 @@ def wiki_catalog(request,project_id):
     
     
     var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id
-    var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).attr('href',href).append($("<ul>"))
+    var li = $("<li>").attr("id", "id_" + item.id).append( $("<a>").text(item.title).attr('href',href) ).append($("<ul>"))
+    
     ```
 
 - 视图函数根据request是否含有wiki_id字段，来决定显示内容
@@ -5463,8 +5464,6 @@ def wiki_catalog(request,project_id):
   ```
 
   
-
-
 
 #### 2.3.预览文章
 

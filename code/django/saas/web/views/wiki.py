@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,HttpResponse
 from web.forms.wiki import WikiModelForm
 from django.urls import reverse
 from web import models
@@ -6,9 +6,10 @@ from django.http import JsonResponse
 def wiki(request, project_id):
     '''wiki的首页'''
     wiki_id = request.GET.get('wiki_id')
-    if not wiki_id.isdecimal():
+    if not wiki_id or not wiki_id.isdecimal():
+        print('wiki_id is not exsits')
         return render(request,'web/wiki.html')
-
+    print('wiki')
     wiki_object = models.Wiki.objects.filter(id=wiki_id,project_id=project_id).first()
 
     return render(request, 'web/wiki.html', {'wiki_object':wiki_object})

@@ -115,7 +115,7 @@
                     if (res.status) {
                         $.each(res.data, function (index, item) {
                             var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id
-                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title)).attr('href',href).append($("<ul>"))
+                            var li = $("<li>").attr("id", "id_" + item.id).append( $("<a>").text(item.title).attr('href',href) ).append($("<ul>"))
 
                             // 接收到后端传递的字典格式的数据
                             if (!item.parent_id) {
