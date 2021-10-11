@@ -59,6 +59,17 @@
                        class="btn btn-success btn-xs">
                         <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
                     </a>
+                    {% if wiki_object %}
+                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                           class="btn btn-primary btn-xs">
+                            <i class="fa fa-edit" aria-hidden="true"></i> 修改
+                        </a>
+                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                           class="btn btn-danger btn-xs">
+                            <i class="fa fa-trash" aria-hidden="true"></i> 删除
+                        </a>
+
+                    {% endif %}
                 </div>
             </div>
             <div class="panel-body">
@@ -115,7 +126,7 @@
                     if (res.status) {
                         $.each(res.data, function (index, item) {
                             var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id
-                            var li = $("<li>").attr("id", "id_" + item.id).append( $("<a>").text(item.title).attr('href',href) ).append($("<ul>"))
+                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title).attr('href', href)).append($("<ul>"))
 
                             // 接收到后端传递的字典格式的数据
                             if (!item.parent_id) {

@@ -5430,9 +5430,11 @@ def wiki_catalog(request,project_id):
     return JsonResponse({'status':True,'data':list(data)})
 ```
 
-**点击目录查看详细**
+
+#### 2.3.预览文章
 
 - url设计问题
+
   - 和wiki共用一个url
 
 - 文章id如何获取
@@ -5465,17 +5467,48 @@ def wiki_catalog(request,project_id):
 
   
 
-#### 2.3.预览文章
+#### 2.4.删除文章
+
+- 存在wiki_object的时候，才出现修改和删除按钮
+
+  ```html
+                  <div class="function">
+                      <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                         class="btn btn-success btn-xs">
+                          <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
+                      </a>
+                      {% if wiki_object %}
+                          <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                             class="btn btn-primary btn-xs">
+                              <i class="fa fa-edit" aria-hidden="true"></i> 修改
+                          </a>
+                          <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                             class="btn btn-danger btn-xs">
+                              <i class="fa fa-trash" aria-hidden="true"></i> 删除
+                          </a>
+  
+                      {% endif %}
+                  </div>
+  ```
+
+- 
+
+#### 2.5.修改文章
 
 
 
-#### 2.4.修改文章
+#### 2.6.Wiki编辑
 
 
 
-#### 2.5.删除文章
+#### 2.7.markdown编辑器
+
+- 添加、编辑
+- 预览页面
 
 
+
+#### 2.8.markdown上传图片功能
 
 
 
