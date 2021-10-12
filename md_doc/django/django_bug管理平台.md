@@ -5521,7 +5521,36 @@ def wiki_catalog(request,project_id):
 
 #### 2.5.修改文章
 
+- 配置修改的路由
 
+  ```python
+          url(r'^wiki/edit/(?P<wiki_id>\d+)/$', wiki.wiki_edit, name='wiki_edit'),
+  
+  ```
+
+- 完善视图函数
+
+  ```python
+  def wiki_edit(request, project_id, wiki_id):
+      '''编辑文章'''
+      wiki_object = models.Wiki.objects.filter(project_id=project_id,id=wiki_id).first()
+      if not wiki_object:
+          url = reverse('web:wiki',kwargs={'project_id':project_id})
+          return redirect(url)
+      form = WikiModelForm(request,instance=wiki_object)
+      return render(request,'web/wiki_add.html',{'form':form})
+  ```
+
+- 配置href跳转属性
+
+  ```html
+                          <a href="{% url 'web:wiki_edit' project_id=request.tracer.project.id wiki_id=wiki_object.id %}" type="button"
+                             class="btn btn-primary btn-xs">
+                              <i class="fa fa-edit" aria-hidden="true"></i> 修改
+                          </a>
+  ```
+
+  
 
 #### 2.6.Wiki编辑
 

@@ -60,7 +60,7 @@
                         <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建
                     </a>
                     {% if wiki_object %}
-                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                        <a href="{% url 'web:wiki_edit' project_id=request.tracer.project.id wiki_id=wiki_object.id %}" type="button"
                            class="btn btn-primary btn-xs">
                             <i class="fa fa-edit" aria-hidden="true"></i> 修改
                         </a>

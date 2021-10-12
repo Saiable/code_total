@@ -50,4 +50,10 @@ def wiki_delete(request, project_id, wiki_id):
 
 def wiki_edit(request, project_id, wiki_id):
     '''编辑文章'''
+    wiki_object = models.Wiki.objects.filter(project_id=project_id,id=wiki_id).first()
+    if not wiki_object:
+        url = reverse('web:wiki',kwargs={'project_id':project_id})
+        return redirect(url)
+    form = WikiModelForm(request,instance=wiki_object)
+    return render(request,'web/wiki_add.html',{'form':form})
     
