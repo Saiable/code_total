@@ -41,3 +41,13 @@ def wiki_catalog(request,project_id):
     # data = models.Wiki.objects.filter(project=request.tracer.project).values("id","title","parent_id")
 
     return JsonResponse({'status':True,'data':list(data)})
+
+def wiki_delete(request, project_id, wiki_id):
+    '''删除文章'''
+    models.Wiki.objects.filter(project_id=project_id,id=wiki_id).delete()
+    url = reverse('web:wiki', kwargs= {'project_id':project_id})
+    return redirect(url)
+
+def wiki_edit(request, project_id, wiki_id):
+    '''编辑文章'''
+    

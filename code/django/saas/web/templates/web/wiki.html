@@ -64,7 +64,7 @@
                            class="btn btn-primary btn-xs">
                             <i class="fa fa-edit" aria-hidden="true"></i> 修改
                         </a>
-                        <a href="{% url 'web:wiki_add' project_id=request.tracer.project.id %}" type="button"
+                        <a href="{% url 'web:wiki_delete' project_id=request.tracer.project.id wiki_id=wiki_object.id %}" type="button"
                            class="btn btn-danger btn-xs">
                             <i class="fa fa-trash" aria-hidden="true"></i> 删除
                         </a>

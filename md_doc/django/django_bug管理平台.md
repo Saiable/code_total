@@ -5491,7 +5491,33 @@ def wiki_catalog(request,project_id):
                   </div>
   ```
 
-- 
+- 配置删除的路由，绑定wiki_id
+
+  ```python
+          url(r'^wiki/delete/(?P<wiki_id>\d+)/$', wiki.wiki_delete, name='wiki_delete'),
+  
+  ```
+
+- 新增删除的视图
+
+  ```python
+  def wiki_delete(request, project_id, wiki_id):
+      '''删除文章'''
+      models.Wiki.objects.filter(project_id=project_id,id=wiki_id).delete()
+      url = reverse('web:wiki', kwargs= {'project_id':project_id})
+      return redirect(url)
+  ```
+
+- 配置前端的href属性
+
+  ```html
+  <a href="{% url 'web:wiki_delete' project_id=request.tracer.project.id wiki_id=wiki_object.id %}" type="button"
+     class="btn btn-danger btn-xs">
+  ```
+
+  这里做的是级联删除，删掉父文章，子文章会跟着全部删掉
+
+  
 
 #### 2.5.修改文章
 
