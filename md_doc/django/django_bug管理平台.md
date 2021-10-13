@@ -5554,9 +5554,40 @@ def wiki_catalog(request,project_id):
 
 #### 2.6.Wiki编辑
 
+```python
+def wiki_edit(request, project_id, wiki_id):
+    '''编辑文章'''
+    wiki_object = models.Wiki.objects.filter(project_id=project_id,id=wiki_id).first()
+    if not wiki_object:
+        url = reverse('web:wiki',kwargs={'project_id':project_id})
+        return redirect(url)
+    if request.method == 'GET':
+        form = WikiModelForm(request,instance=wiki_object)
+        return render(request,'web/wiki_add.html',{'form':form})
+    form = WikiModelForm(request,data=request.POST,instance=wiki_object)
+    if form.is_valid():
+        # 判断用户是否选择了父文章
+        if form.instance.parent:
+            form.instance.depth = form.instance.parent.depth + 1
+        else:
+            form.instance.depth = 1
+        form.save()
+        url = reverse('web:wiki',kwargs={'project_id':project_id})
+        preview_url = "{0}?wiki_id={1}".format(url,wiki_id)
+        return redirect(preview_url)
+    return render(request, 'web/wiki_add.html', {'form': form})
 
+```
+
+参照wiki.html
+
+完善wiki_add.html
 
 #### 2.7.markdown编辑器
+
+
+
+
 
 - 添加、编辑
 - 预览页面

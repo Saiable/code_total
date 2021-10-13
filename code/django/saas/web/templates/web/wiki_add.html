@@ -25,6 +25,20 @@
             flex-direction: row;
             justify-content: space-between;
         }
+
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px;
+        }
+
+        .title-list ul {
+            padding-left: 15px;
+        }
+
+        .title-list ul a {
+            display: block;
+            padding: 5px 0;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -43,7 +57,16 @@
             </div>
             <div class="panel-body">
                 <div class="col-sm-3 title-list">
-
+                    <ul id="catalog">
+                        {#                        <li><a href="">目录一</a>#}
+                        {#                            <ul>#}
+                        {#                                <li><a href="">aa</a></li>#}
+                        {#                                <li><a href="">bb</a></li>#}
+                        {#                            </ul>#}
+                        {#                        </li>#}
+                        {#                        <li><a href="">目录二</a></li>#}
+                        {#                        <li><a href="">目录三</a></li>#}
+                    </ul>
 
                 </div>
                 <div class="col-sm-9 content">
@@ -66,4 +89,42 @@
     </div>
 
 
+{% endblock %}
+
+
+{% block js %}
+    <script>
+        var WIKI_DETAIL_URL = "{% url 'web:wiki' project_id=request.tracer.project.id %}"
+
+        $(function () {
+            initCatalog()
+        })
+
+        function initCatalog() {
+            $.ajax({
+                url: "{% url 'web:wiki_catalog' project_id=request.tracer.project.id %}",
+                type: "GET",
+                dataType: "JSON",
+                success: function (res) {
+                    console.log(res)
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            var href = WIKI_DETAIL_URL + "?wiki_id=" + item.id
+                            var li = $("<li>").attr("id", "id_" + item.id).append($("<a>").text(item.title).attr('href', href)).append($("<ul>"))
+
+                            // 接收到后端传递的字典格式的数据
+                            if (!item.parent_id) {
+                                $("#catalog").append(li)
+                            } else {
+                                $("#id_" + item.parent_id).children("ul").append(li)
+                            }
+
+                        })
+                    } else {
+                        alert('初始化目录失败')
+                    }
+                }
+            })
+        }
+    </script>
 {% endblock %}

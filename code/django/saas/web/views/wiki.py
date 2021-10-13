@@ -54,6 +54,20 @@ def wiki_edit(request, project_id, wiki_id):
     if not wiki_object:
         url = reverse('web:wiki',kwargs={'project_id':project_id})
         return redirect(url)
-    form = WikiModelForm(request,instance=wiki_object)
-    return render(request,'web/wiki_add.html',{'form':form})
+    if request.method == 'GET':
+        form = WikiModelForm(request,instance=wiki_object)
+        return render(request,'web/wiki_add.html',{'form':form})
+    form = WikiModelForm(request,data=request.POST,instance=wiki_object)
+    if form.is_valid():
+        # 判断用户是否选择了父文章
+        if form.instance.parent:
+            form.instance.depth = form.instance.parent.depth + 1
+        else:
+            form.instance.depth = 1
+        form.save()
+        url = reverse('web:wiki',kwargs={'project_id':project_id})
+        preview_url = "{0}?wiki_id={1}".format(url,wiki_id)
+        return redirect(preview_url)
+    return render(request, 'web/wiki_add.html', {'form': form})
+
     
