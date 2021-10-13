@@ -1,5 +1,7 @@
 {% extends 'web/layout/manage.html' %}
+{% load static %}
 {% block css %}
+    <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.min.css' %}">
     <style>
         .panel-default {
             margin-top: 10px;
@@ -39,8 +41,12 @@
             display: block;
             padding: 5px 0;
         }
+        .editormd-fullscreen {
+            z-index: 1001;
+        }
     </style>
 {% endblock %}
+
 {% block content %}
     <div class="container-fluid">
         <div class="panel panel-default">
@@ -73,11 +79,21 @@
                     <form method="post">
                         {% csrf_token %}
                         {% for field in form %}
-                            <div class="form-group">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {{ field }}
-                                <span class="error-msg">{{ field.errors.0 }}</span>
-                            </div>
+                            {% if field.name == "content" %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    <div id="editor">
+                                        {{ field }}
+                                    </div>
+                                    <span class="error-msg">{{ field.errors.0 }}</span>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    <span class="error-msg">{{ field.errors.0 }}</span>
+                                </div>
+                            {% endif %}
                         {% endfor %}
 
                         <button type="submit" class="btn btn-primary">提 交</button>
@@ -93,11 +109,13 @@
 
 
 {% block js %}
+    <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
     <script>
         var WIKI_DETAIL_URL = "{% url 'web:wiki' project_id=request.tracer.project.id %}"
 
         $(function () {
             initCatalog()
+            initEditorMd()
         })
 
         function initCatalog() {
@@ -124,6 +142,14 @@
                         alert('初始化目录失败')
                     }
                 }
+            })
+        }
+
+        function initEditorMd() {
+            editormd('editor', {
+                placeholder:"请输入内容",
+                height:500,
+                path: "{% static 'web/plugin/editor-md/lib/' %}",
             })
         }
     </script>

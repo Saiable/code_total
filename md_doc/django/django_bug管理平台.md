@@ -5585,16 +5585,179 @@ def wiki_edit(request, project_id, wiki_id):
 
 #### 2.7.markdown编辑器
 
+富文本编辑器：ckeditor
 
-
-
+markdown编辑器：mdeditor
 
 - 添加、编辑
 - 预览页面
 
+项目中想要应用markdown编辑器
+
+- 添加和编辑页面中的textarea输入框 > 转换为markdown编辑器
+
+官网：https://pandao.github.io/editor.md/
+
+下载地址：https://github.com/pandao/editor.md/archive/master.zip
+
+下载解压后，将文件拷贝至static/web/plugin文件夹下
+
+在wiki_add.html中引入css和js文件
+
+```html
+    <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.min.css' %}">
+
+...
+
+    <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
+
+```
+
+在js中初始化
+
+```javascript
+        $(function () {
+            initCatalog()
+            initEditorMd()
+        })
+        
+		function initEditorMd() {
+            editormd('editor', {
+                placeholder:"请输入内容",
+                height:500,
+                path: "{% static 'web/plugin/editor-md/lib/' %}",
+            })
+        }
+```
+
+wiki_add.html中的content字段加入判断
+
+```html
+<form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            {% if field.name == "content" %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    <div id="editor">
+                                        {{ field }}
+                                    </div>
+                                    <span class="error-msg">{{ field.errors.0 }}</span>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    <span class="error-msg">{{ field.errors.0 }}</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary">提 交</button>
+                    </form>
+```
+
+解决markdown编辑时，全屏的小bug，加入css
+
+```html
+        .editormd-fullscreen {
+            z-index: 1001;
+        }
+```
+
+- 预览页面，也按markdown格式显示
+
+wiki.html
+
+```html
+                <div class="col-sm-9 content">
+                    {% if wiki_object %}
+                        <div id="previewMarkdown">
+                            <textarea>
+                                {{ wiki_object.content }}
+                            </textarea>
+                        </div>
+```
+
+引入preview对应的css和js
+
+```css
+        <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.preview.min.css' %}">
 
 
-#### 2.8.markdown上传图片功能
+......
+
+    <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/marked.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/prettify.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/raphael.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/underscore.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/sequence-diagram.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/flowchart.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor-md/lib/jquery.flowchart.min.js' %}"></script>
+
+
+
+```
+
+初始化
+
+```javascript
+        $(function () {
+            initCatalog()
+            initPreviewMarkdown()
+        })
+
+        function initPreviewMarkdown() {
+            editormd.markdownToHTML("previewMarkdown", {
+                htmlDecode: "style,script,iframe",
+            })
+        }
+```
+
+
+
+#### 2.8.腾讯对象存储
+
+##### 2.8.1.创建桶
+
+公有读私有写
+
+##### 2.8.2.python实现文件上传
+
+​	官方指导手册：https://cloud.tencent.com/document/product/436/12269
+
+```shell
+pip install -U cos-python-sdk-v5
+```
+
+
+
+```python
+# -*- coding=utf-8
+# appid 已在配置中移除,请在参数 Bucket 中带上 appid。Bucket 由 BucketName-APPID 组成
+# 1. 设置用户配置, 包括 secretId，secretKey 以及 Region
+from qcloud_cos import CosConfig
+from qcloud_cos import CosS3Client
+import sys
+import logging
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+# 1. 设置用户属性, 包括 secret_id, secret_key, region等。Appid 已在CosConfig中移除，请在参数 Bucket 中带上 Appid。Bucket 由 BucketName-Appid 组成
+secret_id = 'SecretId'     # 替换为用户的 SecretId，请登录访问管理控制台进行查看和管理，https://console.cloud.tencent.com/cam/capi
+secret_key = 'SecretKey'   # 替换为用户的 SecretKey，请登录访问管理控制台进行查看和管理，https://console.cloud.tencent.com/cam/capi
+region = 'ap-nanjing'      # 替换为用户的 region，已创建桶归属的region可以在控制台查看，https://console.cloud.tencent.com/cos5/bucket
+                           # COS支持的所有region列表参见https://www.qcloud.com/document/product/436/6224
+token = None               # 如果使用永久密钥不需要填入token，如果使用临时密钥需要填入，临时密钥生成和使用指引参见https://cloud.tencent.com/document/product/436/14048
+scheme = 'https'           # 指定使用 http/https 协议来访问 COS，默认为 https，可不填
+
+config = CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key, Token=token, Scheme=scheme)
+
+# 2. 获取客户端对象
+client = CosS3Client(config)
+# 参照下文的描述。或者参照 Demo 程序，详见 https://github.com/tencentyun/cos-python-sdk-v5/blob/master/qcloud_cos/demo.py
+```
 
 
 
