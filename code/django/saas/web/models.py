@@ -7,6 +7,7 @@ class UserInfo(models.Model):
     mobile_phone = models.CharField(verbose_name='手机号',max_length=32)
     password = models.CharField(verbose_name='密码',max_length=32)
     # price_policy = models.ForeignKey(verbose_name='价格策略',to='PricePolicy',null=True,blank=True)
+
 class PricePolicy(models.Model):
     # 价格策略
     category_choices = (
@@ -66,8 +67,8 @@ class Project(models.Model):
     use_space = models.BigIntegerField(verbose_name='项目已使用空间',default=0)
     star = models.BooleanField(verbose_name='星标',default=False)
 
-    # bucket = models.CharField(verbose_name='腾讯对象存储桶',default=1)
-    # region = models.CharField(verbose_name='腾讯对象存储桶区域',max_length=32)
+    bucket = models.CharField(verbose_name='COS桶',max_length=128)
+    region = models.CharField(verbose_name='COS区域',max_length=32)
 
     join_count = models.SmallIntegerField(verbose_name='参与人数',default=1)
     creator = models.ForeignKey(verbose_name='创建者',to='UserInfo')
@@ -88,6 +89,7 @@ class ProjectUser(models.Model):
 
     create_time = models.DateTimeField(verbose_name='加入时间',auto_now_add=True)
 
+
 class Wiki(models.Model):
     project = models.ForeignKey(verbose_name='项目',to='Project')
     title = models.CharField(verbose_name='标题',max_length=32)
@@ -98,4 +100,3 @@ class Wiki(models.Model):
 
     def __str__(self):
         return self.title
-

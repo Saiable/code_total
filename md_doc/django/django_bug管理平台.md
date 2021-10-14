@@ -5858,7 +5858,13 @@ response = client.upload_file(
 print(response['ETag'])
 ```
 
+##### 2.8.3.项目中集成cos
 
+###### 2.8.3.1.创建项目时创建桶
+
+
+
+###### 2.8.3.2.markdown上传图片到cos
 
 
 
