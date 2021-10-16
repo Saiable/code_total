@@ -37,11 +37,10 @@ class ProjectModelForms(BootstrapForm, forms.ModelForm):
         if exists:
             raise ValidationError('项目名已存在')
         # 2.当前用户是否还有额度进行创建项目
-        # 最多创建N个项目
-        max_num = self.request.tracer.price_policy.project_num
         # 现在已创建多少项目
         count = models.Project.objects.filter(creator=self.request.tracer.user).count()
-
-        if count >= max_num:
+        print(self.request.tracer)
+        print(self.request.tracer.price_policy)
+        if count >= self.request.tracer.price_policy.project_num:
             raise ValidationError('项目个数超限，请购买套餐')
         return name

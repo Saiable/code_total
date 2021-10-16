@@ -29,8 +29,8 @@ class AuthMiddleware(MiddlewareMixin):
 
         # 如果用户已登陆，则在request中赋值，否则设置为0
         user_id = request.session.get('user_id', 0)
-
         user_object = models.UserInfo.objects.filter(id=user_id).first()
+
         request.tracer.user = user_object
         # 白名单，没有登陆都可以访问的url
         '''
@@ -53,7 +53,7 @@ class AuthMiddleware(MiddlewareMixin):
         current_datetime = datetime.datetime.now()
         if _object.end_datetime and _object.end_datetime < current_datetime:
             # 过期
-            _object = models.Transaction.objects.filter(user=user_object, status=2, price_policy_category=1).first()
+            _object = models.Transaction.objects.filter(user=user_object, status=2, price_policy__category=1).first()
         # request.transaction = _object
         request.tracer.price_policy = _object.price_policy
         '''

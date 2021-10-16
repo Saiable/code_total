@@ -5,7 +5,7 @@ from web import models
 def project_list(request):
     '''项目列表'''
     # print(request.tracer.user)
-    # print(request.tracer.price_policy)
+    print(request.tracer.price_policy)
     if request.method == 'GET':
         '''
         GET请求查看项目列表
