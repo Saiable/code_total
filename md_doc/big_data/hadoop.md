@@ -112,6 +112,10 @@ Win10直接可以在任务管理器中的【性能】面看查看，Win7则需�
 
 第二步才是安装系统
 
+[CentOS-7-x86_64-DVD-1804.iso](http://mirrors.sohu.com/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso)
+
+
+
 ### 2.1.4.远程终端工具安装
 
 
