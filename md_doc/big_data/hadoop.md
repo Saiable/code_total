@@ -180,11 +180,198 @@ Win10直接可以在任务管理器中的【性能】面看查看，Win7则需�
 
 暂时不用创建用户
 
+加载完后重启
+
+接受许可协议
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/210d2bf2a4fc4b6bb1afb37d34a69cf6.png)
+
+语言选择中文，时区选择上海，
+
+其他的默认
+
+设置账号，密码保持一致，这里是111111
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/a2e064d735d144a5a211692594b0f361.png)
+
+至此虚拟机安装完成
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/ae9462e61a5b4bf89de69c94dafffa6f.png)
+
+### 2.1.4.配置IP和主机名称
+
+vmware的菜单栏，点击编辑>虚拟网络编辑器
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/9454b937db514e0a9047f9d0bb5fe96c.png)
+
+点击NAT设置
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/70dece7483e7421295396146354475b1.png)
+
+此时虚拟机的IP地址配置完成
+
+然后配置本机的Vmware Network Adapter VMnet8设置：
+
+路径：控制面板\网络和 Internet\网络连接
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/01039d71db274bbd832c7c54cfec067a.png)
+
+右键属性：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/bd4c4e140a1d4f5bb03773dc1c8d0b47.png)
+
+如果vmnet8没出来，在vmware菜单栏，虚拟网络编辑器处，点击还原默认设置即可
+
+- 修改ip地址
+
+进入hadoop01
+
+su root，输入密码111111
+
+编辑：`vim /etc/sysconfig/network-scripts/ifcfg-ens33`
+
+```
+修改为静态获取ip，否则每次重启系统，ip地址都会变化的
+BOOTPROTO="static" 
+# 有的是没有引号的，和上下文保持一致
+```
 
 
-### 2.1.4.远程终端工具安装
+
+完整配置
+
+```
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=66119999-13b4-4d2b-8943-68612a85156f  # 随机id
+DEVICE=ens33  # 接口名（设备、网卡）
+ONBOOT=yes  # 系统启动的时候网络接口是否有效（yes/no）
+
+# IP地址
+IPADDR=192.168.10.100
+# 网关
+GATEWAY=192.168.10.2
+# 域名解析器
+DNS1=192.168.10.2
+
+```
+
+- 修改主机名称
+
+`vi /etc/hostname`
+
+```
+hadoop100
+```
+
+- 修改主机名称映射
+
+`vim /etc/hosts`
+
+完整配置如下：
+
+```
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+192.168.10.100 hadoop100
+192.168.10.101 hadoop101
+192.168.10.102 hadoop102
+192.168.10.103 hadoop103
+192.168.10.104 hadoop104
+192.168.10.105 hadoop105
+192.168.10.106 hadoop106
+192.168.10.107 hadoop107
+192.168.10.108 hadoop108
+
+```
+
+最后`reboot`重启一下
+
+查看一下ip：
+
+`ifconfig`
+
+```
+[root@hadoop100 sai]# ifconfig
+ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.10.100  netmask 255.255.255.0  broadcast 192.168.10.255
+        inet6 fe80::7f40:9399:9c40:3ab8  prefixlen 64  scopeid 0x20<link>
+        ether 00:0c:29:b2:d0:f5  txqueuelen 1000  (Ethernet)
+        RX packets 56  bytes 19427 (18.9 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 68  bytes 8539 (8.3 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+```
+
+`inet 192.168.10.100  netmask 255.255.255.0  broadcast 192.168.10.255`
+
+ping一下外网：
+
+```
+[root@hadoop100 sai]# ping www.baidu.com
+PING www.a.shifen.com (14.215.177.38) 56(84) bytes of data.
+64 bytes from 14.215.177.38 (14.215.177.38): icmp_seq=1 ttl=128 time=29.2 ms
+64 bytes from 14.215.177.38 (14.215.177.38): icmp_seq=2 ttl=128 time=29.4 ms
+64 bytes from 14.215.177.38 (14.215.177.38): icmp_seq=3 ttl=128 time=28.9 ms
+64 bytes from 14.215.177.38 (14.215.177.38): icmp_seq=4 ttl=128 time=29.1 ms
+
+```
+
+是可以的
+
+### 2.1.5.远程终端工具安装
+
+安装xshell，远程登录192.168.10.100
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/056c988adbfb49eaba27c0ef7d55b92f.png)
 
 
+
+在windows中修改主机名称映射：
+
+进入`C:\Windows\System32\drivers\etc`
+
+修改hosts文件，将
+
+```
+192.168.10.100 hadoop100
+192.168.10.101 hadoop101
+192.168.10.102 hadoop102
+192.168.10.103 hadoop103
+192.168.10.104 hadoop104
+192.168.10.105 hadoop105
+192.168.10.106 hadoop106
+192.168.10.107 hadoop107
+192.168.10.108 hadoop108
+```
+
+复制到最后并保存后，就可以用hostname远程登录了：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/619bea2c3b404f9298ea16e6d09ecc35.png)
+
+win10由于权限问题，需要将hosts整个文件先复制一份，然后修改，最后替换原来的hosts，win7直接修改即可
+
+### 2.1.6.模板虚拟机准备完成
+
+- 安装`epel-release`
+
+  注：Extart Packages for Enterprise Linux是“红帽系”的操作系统，提供的额外的软件包，适用于RHEL、CENTOS和Scientific Linux。相当于是一个软件仓库，大多数rpm包在官方repository中是找不到的
+
+  `yum install -y epel-release`
+
+- 注意，如果
 
 ## 2.2.克隆虚拟机
 
