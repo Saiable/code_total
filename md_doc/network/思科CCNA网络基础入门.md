@@ -685,21 +685,31 @@ T-568B=橙白-橙-绿白-蓝-蓝白-绿-棕白-棕
 
 
 
+```
+>enable
+#configure terminal
+(config)#interface fastEthernet 0/0
+(config-if)#ip address 192.168.1.1 255.255.255.0
+(config-if)#no shutdown
+exit
+end
+>show running-config
+>show ip interface brief
+(config)#hostname r1
+(config)#enable password 111111
+no
+(config)#enable secret 111111
+```
+
+![image-20211021223806223](F:\workspace\git\code_total\md_doc\network\image-20211021223806223.png)
+
+![image-20211021223813514](F:\workspace\git\code_total\md_doc\network\image-20211021223813514.png)
 
 
 
+![image-20211021223923657](F:\workspace\git\code_total\md_doc\network\image-20211021223923657.png)
 
-
-
-
-
-
-
-
-
-
-
-
+![image-20211021223930616](F:\workspace\git\code_total\md_doc\network\image-20211021223930616.png)
 
 
 
