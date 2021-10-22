@@ -683,7 +683,7 @@ T-568B=橙白-橙-绿白-蓝-蓝白-绿-棕白-棕
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/5166330a109c4bd188983f5ea17d46c2.png)
 
-
+### 4.2.基础命令集汇总
 
 ```
 >enable
@@ -699,19 +699,106 @@ end
 (config)#enable password 111111
 no
 (config)#enable secret 111111
+
 ```
 
-![image-20211021223806223](F:\workspace\git\code_total\md_doc\network\image-20211021223806223.png)
+工程三招
 
-![image-20211021223813514](F:\workspace\git\code_total\md_doc\network\image-20211021223813514.png)
+```
+(config)#no ip dommain lookup
+(config)#ip dommain lookup
+
+(config)#line console 0
+(config-line)#logging synchronous //显示信息同步
+(config-line)#no exec-timeout //关闭会话超时，防止一段时间不操作自动退出
+```
 
 
 
-![image-20211021223923657](F:\workspace\git\code_total\md_doc\network\image-20211021223923657.png)
+ctrl+shift+6 中断进程
 
-![image-20211021223930616](F:\workspace\git\code_total\md_doc\network\image-20211021223930616.png)
+另外的软件GNS3
+
+## 5.静态路由协议
 
 
+
+路由表：
+
+
+
+R1
+
+```
+
+Router>enable 
+Router#conf ter
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int f0/0
+Router(config-if)#
+Router(config-if)#ip add 192.168.1.1 255.255.255.0
+Router(config-if)#exit
+Router(config)#hostname r1
+r1(config-if)#no sh
+r1(config-if)#
+%LINK-5-CHANGED: Interface FastEthernet0/0, changed state to up
+```
+
+链路协议开启
+
+```
+r1#show ip route
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+```
+
+R2的f0/0必须要是1.0网络的
+
+```
+Router>enable
+Router#confi
+Router#configure ter
+Router#configure terminal 
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#hostname r2
+r2(config)#interfa
+r2(config)#interface f0/0
+r2(config-if)#ip add
+r2(config-if)#ip address 192.168.1.2 255.255.255.0
+r2(config-if)#no sh
+
+r2(config-if)#
+%LINK-5-CHANGED: Interface FastEthernet0/0, changed state to up
+
+// 加do，就不用切换到上一级目录了
+r2(config-if)#do show ip route
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+```
+
+R1
+
+```
+```
+
+## 6.ARP协议
+
+### 6.1.什么是ARP协议
 
 
 
