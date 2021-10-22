@@ -653,7 +653,10 @@ IP地址：92.168.1.128 ~ 191
 
 ## 4.基础命令集汇总
 
-软件：packet tracer
+软件：
+
+- packet tracer
+- gns3
 
 ### 4.1.以太网技术的线缆标准
 
@@ -684,6 +687,10 @@ T-568B=橙白-橙-绿白-蓝-蓝白-绿-棕白-棕
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/5166330a109c4bd188983f5ea17d46c2.png)
 
 ### 4.2.基础命令集汇总
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/29be968ae72e4aa8991ca2c7d9c71a87.png)
+
+
 
 ```
 >enable
@@ -762,24 +769,20 @@ Gateway of last resort is not set
 
 R2的f0/0必须要是1.0网络的
 
+配置R2路由器
+
 ```
-Router>enable
-Router#confi
-Router#configure ter
-Router#configure terminal 
+Router>enable 
+Router#conf terminal 
 Enter configuration commands, one per line.  End with CNTL/Z.
-Router(config)#hostname r2
-r2(config)#interfa
-r2(config)#interface f0/0
-r2(config-if)#ip add
-r2(config-if)#ip address 192.168.1.2 255.255.255.0
-r2(config-if)#no sh
+Router(config)#int f0/0
+Router(config-if)#ip add 192.168.0.2 255.255.255.0
+```
 
-r2(config-if)#
-%LINK-5-CHANGED: Interface FastEthernet0/0, changed state to up
+在全局模式下，想要执行特权模式下的show，可以不用exit，直接加do，
 
-// 加do，就不用切换到上一级目录了
-r2(config-if)#do show ip route
+```
+Router(config-if)#do show ip route
 Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
        D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
        N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
@@ -791,10 +794,7 @@ Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
 Gateway of last resort is not set
 ```
 
-R1
-
-```
-```
+此时R1和R2是直接，这时候可以在R2 ping一下R1
 
 ## 6.ARP协议
 
