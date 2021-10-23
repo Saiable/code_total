@@ -690,51 +690,88 @@ T-568B=橙白-橙-绿白-蓝-蓝白-绿-棕白-棕
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/29be968ae72e4aa8991ca2c7d9c71a87.png)
 
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2312e4d5c17341bcbc00d968f68eedc1.png)
 
+#### 4.2.1.基础命令集
 
 ```
 >enable
+
 #configure terminal
+
+// 进入接口才可以配置Ip(快速以太网口)
+// f0/0 f0/1 f0/2 表示一个插槽上，有好几个接口
+// f0/0 f1/0 表示有好几个插槽
 (config)#interface fastEthernet 0/0
+
+//接口模式
+//配置IP，IP + 子网掩码
 (config-if)#ip address 192.168.1.1 255.255.255.0
+// 同步设置不关闭，把接口打开
 (config-if)#no shutdown
+
+// 退出命令
+// 回到上一级
 exit
+// 直接回到特权模式
 end
->show running-config
->show ip interface brief
+
+// 查询命令
+// show 命令
+// running-config 保存在ram中，关机就没了
+#show running-config
+// 不查询所有，只查ip
+#show ip interface brief
+
+// 配置主机名，便于辨识
 (config)#hostname r1
+// 设置进入特权模式的密码
 (config)#enable password 111111
-no
+
+// 删除操作
+// 一般情况下，当初在哪个模式下，怎么输的，在前面加 no 就可以
+// 如果是有自己决定的参数，删除时可以不加
+no 
+
+// 类似于 enable password，但是可以避免别人 show run 查询密文密码 
 (config)#enable secret 111111
 
 ```
 
-工程三招
+#### 4.2.3常见模式
+
+![](https://img-blog.csdnimg.cn/2011fa94c1e34b49b3013afd1489792e.png)
+
+#### 4.2.4.命令语法检查
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/d11fc32605f74f1288872e68159053d2.png)
+
+#### 4.2.5.快捷键
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/7d21d8be0ef4416d924e10815f1a808f.png)
+
+#### 4.2.6.工程三招
 
 ```
+// 关闭域名解析（防止特权模式下，测试时敲错命令查询），如果真敲错了，可以用ctrl+shift+6中断
 (config)#no ip dommain lookup
+// 测试完之后，一定要再打开
 (config)#ip dommain lookup
 
+// 全局模式下，进入控制台
 (config)#line console 0
-(config-line)#logging synchronous //显示信息同步
-(config-line)#no exec-timeout //关闭会话超时，防止一段时间不操作自动退出
+// log当前显示信息同步，实际配置时，各种配置需要等一会才会同步生效的
+// 这样可以让，延迟显示的信息，和自己敲的命令，不会混在一起
+(config-line)#logging synchronous 
+// 关闭会话超时，防止一段时间不操作自动退出
+(config-line)#no exec-timeout 
 ```
 
 
-
-ctrl+shift+6 中断进程
-
-另外的软件GNS3
 
 ## 5.静态路由协议
 
-
-
-路由表：
-
-
-
-R1
+### 5.1.接线：R1 f0/0  -- R2 f0/0
 
 ```
 
@@ -742,7 +779,6 @@ Router>enable
 Router#conf ter
 Enter configuration commands, one per line.  End with CNTL/Z.
 Router(config)#int f0/0
-Router(config-if)#
 Router(config-if)#ip add 192.168.1.1 255.255.255.0
 Router(config-if)#exit
 Router(config)#hostname r1
@@ -753,8 +789,13 @@ r1(config-if)#
 
 链路协议开启
 
+f0/0上的ip协议被开启
+
 ```
+// 查询路由表
 r1#show ip route
+或者
+r1(config-if)#do show ip route
 Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
        D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
        N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
@@ -765,24 +806,78 @@ Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
 
 Gateway of last resort is not set
 
-```
+C    192.168.1.0/24 is directly connected, FastEthernet0/0
 
-R2的f0/0必须要是1.0网络的
-
-配置R2路由器
+// C 表示直连
 
 ```
-Router>enable 
-Router#conf terminal 
+
+R2的f0/0必须要是1.0网络的，
+
+至于R2配置的到底是不是f0/0，得看你接线的时候，接的是哪一个
+
+配置R2 f0/0
+
+```
+r2>enable
+r2#conf ter
 Enter configuration commands, one per line.  End with CNTL/Z.
-Router(config)#int f0/0
-Router(config-if)#ip add 192.168.0.2 255.255.255.0
+r2(config)#int f0/0
+r2(config-if)#ip add 192.168.1.2 255.255.255.0
+// 配置完一定要打开
+r2(config-if)#no sh
+
+r2(config-if)#
+%LINK-5-CHANGED: Interface FastEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/0, changed state to up
+
+// 在全局模式下，想要执行特权模式下的show，可以不用exit，直接加do
+r2(config-if)#do ping 192.168.1.1
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.1.1, timeout is 2 seconds:
+.!!!!
+Success rate is 80 percent (4/5), round-trip min/avg/max = 0/0/0 ms
+// 感叹号表示通了，至于第一个为什么没通，涉及到ARP，下一节讲
 ```
 
-在全局模式下，想要执行特权模式下的show，可以不用exit，直接加do，
+可以看到，左边的线变绿了，表示线路连通
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/28b32fe1a7e94c65b047ebbc96da5e01.png)
+
+### 5.2.接线：R2 f0/1  -- R3 f0/0
+
+问：R2 的 f0/1接口，需要配什么样的ip地址呢？可不可以配 1.0 的网络呢
+
+不能，如果你还配1.0的网路，那就是两个局域网，连成了一个更大的局域网了
+
+而路由器是连接两个不同的ip地址段的，所以路由的每个接口，涉及的一定是不同的ip地址段
+
+如果你要连接相同的ip地址段，就没有必要用路由器了
+
+所以，路由器有一个特性：隔离广播域，隔离掉每个地址段
+
+答：只要不是1.0网络，都可以配
+
+配置R2 f0/1
 
 ```
-Router(config-if)#do show ip route
+r2>en
+r2#conf ter
+Enter configuration commands, one per line.  End with CNTL/Z.
+r2(config)#int f0/1
+r2(config-if)#ip add 192.168.2.1 255.255.255.0
+r2(config-if)#no sh
+
+r2(config-if)#
+%LINK-5-CHANGED: Interface FastEthernet0/1, changed state to up
+```
+
+查看R2的路由表
+
+```
+r2(config-if)#do show ip route
 Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
        D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
        N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
@@ -792,9 +887,102 @@ Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
        P - periodic downloaded static route
 
 Gateway of last resort is not set
+
+C    192.168.1.0/24 is directly connected, FastEthernet0/0
+C    192.168.2.0/24 is directly connected, FastEthernet0/1
 ```
 
-此时R1和R2是直接，这时候可以在R2 ping一下R1
+R2有1.0和2.0两个网络，显示可能会有3~5分钟延迟，可以先去配R3 f0/0，再回来查看R2的路由表
+
+配置R3 f0/0
+
+```
+Router>
+Router>en
+Router#conf ter
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#hostname r3
+r3(config)#int f0/0
+r3(config-if)#ip add 192.168.2.2 255.255.255.0
+r3(config-if)#no sh
+
+r3(config-if)#
+%LINK-5-CHANGED: Interface FastEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/0, changed state to up
+```
+
+查看R3的路由表
+
+```
+r3(config-if)#do show ip route
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+C    192.168.2.0/24 is directly connected, FastEthernet0/0
+```
+
+R3 只有一个直连的2.0网络
+
+### 5.3.连通情况与未连通情况
+
+- 现在的连通情况是
+
+  R1 f0/0 和 R2 f0/0是通的
+
+  R3 f0/0 和 R2 f0/1是通的
+
+- 未连通情况是：
+
+  R1 f0/0 和 R2 f0/1是不通的
+
+  R3 f0/0 和 R2 f0/0是不通的
+
+路由器转发数据的过程：
+
+ping发包遵循的ICMP协议，是一个三层包，没有传输层和应用层，是靠源IP和目的IP进行转发的
+
+我们用R1的1.0网络，去pingR2的2.0网络：
+
+```
+r1(config-if)#do ping 192.168.2.1
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.2.1, timeout is 2 seconds:
+.....
+Success rate is 0 percent (0/5)
+```
+
+ping动作发生时，路由器会根据数据包里面，IP头部的目的IP，去查询自己的路由表，看看有没有到达目的IP的路由
+
+现在ping的是2.1，R1 路由表没有2.0的网络
+
+R1路由表：
+
+```
+C    192.168.1.0/24 is directly connected, FastEthernet0/0
+```
+
+R1需要2.0的网络，干嘛呢？
+
+去确认出口在哪里
+
+1.0的网络路由表，告诉了路由器是直连，1.0网络从f0/0这个口，向外发包
+
+所以，此时R1没有2.0网络，无法确认数据从哪个接口发出去
+
+所以，没有路由的情况下，发不出去数据包
+
+这三台设备，要想实现互相通信，都要有彼此的路由条目信息
+
+要在R1上面，用静态路由的办法，给R1写上2.0的路由
 
 ## 6.ARP协议
 
