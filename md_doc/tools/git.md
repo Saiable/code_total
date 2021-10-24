@@ -1,6 +1,8 @@
 
 
-# 1.安装git
+[TOC]
+
+教程来源：https://www.bilibili.com/video/BV1tz411i7t1?p=1
 
 # 2.使用git
 
@@ -1077,5 +1079,129 @@ To https://gitee.com/mindcons/code_sai.git
   
   ```
 
-  
+
+- 现在`dev`中开发，commit
+- 然后在`dev`中，执行`git rebase master`
+- 接着切换到`master`，再执行`git merge dev`
+- 最后显示`git log --graph --pretty=format:"%h %s"`的时候，就没有分叉了
+
+
+
+## 7.3.应用场景三
+
+之前忘记提交代码的案例中，v1和v2的合并，会产生分叉
+
+不要直接`git pull`
+
+- `git pull`
+  - `git fetch`
+  - `git merge`
+
+直接`git pull`，拉到本地后，回执行`git merge`的操作，
+
+我们直接`git fetch origin dev`，再执行`git rebase origin/dev`
+
+这样子合并的话，提交记录就不会产生分叉。
+
+`git rebase`的时候，上述都是默认没有冲突的。
+
+出现冲突后，按照提示解决冲突后，最后可以执行`git rebase --continue`
+
+## 7.4.beyond compare快速解决冲突
+
+- 安装软件
+
+- 在git中配置，`--local`表示只在当前项目有效
+
+  ```
+  git config --local merge.tool bc3
+  git config --local mergetool.path '/usr/local/bin/bcomp'
+  git config --local mergetool.keepBackup false
+  ```
+
+- 应用`beyond compare`解决冲突
+
+  ```
+  git mergetool
+  ```
+
+## 7.5.命令总结
+
+
+
+# 8.git flow工作流
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/69a33cb6a4214f38b719036e1c88c04a.png)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/9205c94363db4687a6990905f29d7ba0.png)
+
+
+
+
+
+
+
+协同开发：
+
+- 邀请成员
+- 创建组织
+
+## 8.1.git tag
+
+多次`commit`之后，可以
+
+```
+git tag -a v1 -m '第一版'
+git push origin --tag
+```
+
+在git远程，就可以看到tag的版本了：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/50d9096b658c4c4db2fddb2426ceb93c.png)
+
+## 8.2.邀请成员
+
+`git checkout -b dev`
+
+创建，并切换分支
+
+邀请，并设置开发权限
+
+小弟操作：
+
+```
+// 先从主分支拆分
+git checkout dev
+
+// 功能点实际开发时，再拆分
+git checkout -b '功能点1'
+```
+
+## 8.3.代码reivew
+
+git中设置：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2429209b638d4429a7a18b2e25ab337f.png)
+
+
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/ba98c67cbdd14f0e95c5712fe6c330e8.png)
+
+
+
+审查人员：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2d02ed998f834a8e8651af195f62614c.png)
+
+
+
+
+
+
+
+
+
+
+
+
 
