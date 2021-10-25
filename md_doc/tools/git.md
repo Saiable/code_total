@@ -1201,13 +1201,17 @@ git中设置：
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/ba98c67cbdd14f0e95c5712fe6c330e8.png)
 
+提交后
 
+![在这里插入图片描述](https://img-blog.csdnimg.cn/db5546ed2af94478a849c2df8f7f681a.png)
 
 管理人员：
 
 
 
+![在这里插入图片描述](https://img-blog.csdnimg.cn/7fad3616b4c749c59f2fff5993372779.png)
 
 
 
+![在这里插入图片描述](https://img-blog.csdnimg.cn/f1802e7c72414a569f283a60d74e7da1.png)
 
