@@ -1215,3 +1215,68 @@ git中设置：
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/f1802e7c72414a569f283a60d74e7da1.png)
 
+## 8.4.测试上线
+
+从dev分支，切除release版本
+
+```
+git checkout -b release 
+git push origin release
+```
+
+测试完成，把`release`版本`pull request`到`master`中
+
+还要将`release`合并到`dev`，也可以直接`merge`（代码review的时候，不能直接merge）
+
+最后删除`release`
+
+然后把代码拉下来，打tag标识版本，并推送
+
+最后上线的，可以上线tag的v2版本
+
+```
+git branch -d release
+git checkout master
+git pull origin master
+git tag -a v2 -m '第二版'
+git push origin --tags
+```
+
+
+
+# 9.给开源项目贡献代码
+
+- 将别人的源代码，拷贝到自己的仓库
+
+- 在自己的仓库修改
+- 给源代码的作者，提交修复bug的申请（pull reqeust）
+  - 把自己的`master`，申请合并到对方的`master`
+
+# 10.配置文件存放的三个位置
+
+## 10.1.配置
+
+- 项目配置文件：`.git/config`
+
+  ```
+  git config --local user.name 'aaa'
+  git config --local user.email 'aaa@aa.com'
+  ```
+
+- 全局配置文件：`~/.gitconfig`
+
+  ```
+  git config --global user.name 'aaa'
+  git config --global user.email 'aaa@aa.com'
+  ```
+
+- 系统配置文件：`/etc/.gitconfig`
+
+  ```
+  git config --system user.name 'aaa'
+  git config --system user.email 'aaa@aa.com'
+  
+  需要有root权限
+  ```
+
+优先级：现在项目找，再在全局找，最后在系统找
