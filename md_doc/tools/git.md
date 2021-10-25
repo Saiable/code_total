@@ -1161,6 +1161,12 @@ git push origin --tag
 
 ## 8.2.邀请成员
 
+邀请成员进入组织
+
+再邀请成员进入仓库
+
+然后成员创建分支，进行开发
+
 `git checkout -b dev`
 
 创建，并切换分支
@@ -1177,27 +1183,27 @@ git checkout dev
 git checkout -b '功能点1'
 ```
 
-## 8.3.代码reivew
+## 8.3.代码review
+
+成员开发完后，需要做代码review
+
+可以用`pull request`实现，在此之前，需要做一下branch的配置：
 
 git中设置：
 
+![在这里插入图片描述](https://img-blog.csdnimg.cn/7f6d8ebb75724251869e3f941418edf6.png)
+
+
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2429209b638d4429a7a18b2e25ab337f.png)
 
-
+成员创建`pull request`
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/ba98c67cbdd14f0e95c5712fe6c330e8.png)
 
 
 
-审查人员：
-
-![在这里插入图片描述](https://img-blog.csdnimg.cn/2d02ed998f834a8e8651af195f62614c.png)
-
-
-
-
-
-bvhgg
+管理人员：
 
 
 
