@@ -1252,9 +1252,9 @@ git push origin --tags
 - 给源代码的作者，提交修复bug的申请（pull reqeust）
   - 把自己的`master`，申请合并到对方的`master`
 
-# 10.配置文件存放的三个位置
+# 10.补充
 
-## 10.1.配置
+## 10.1.配置文件存放的三个位置
 
 - 项目配置文件：`.git/config`
 
@@ -1280,3 +1280,44 @@ git push origin --tags
   ```
 
 优先级：现在项目找，再在全局找，最后在系统找
+
+应用场景：
+
+```
+git config --local user.name 'aaa'
+git config --local user.email 'aaa@aa.com'
+
+git config --local merge.tool bc3
+git config --local mergetool.path '/usr/local/bin/bcomp'
+git config --local mergetool.keepBackup false
+
+git remote add origin 地址 // 默认添加在本地配置文件中（--local）
+```
+
+## 10.2.git免密登陆
+
+- url中体现
+
+  ```
+  原来的地址：https://gitee.com/mindcons/code_total.git
+  修改的地址：https://用户名:密码@gitee.com/mindcons/code_total.git
+  
+  
+  git remote add https://用户名:密码@gitee.com/mindcons/code_total.git
+  git push origin master
+  ```
+
+- ssh实现
+
+  ```
+  1.生成公钥和私钥
+  git 终端：
+  ssh-keygen
+  2.存储位置
+  默认放在(~/.ssh)
+  id_isa.pub 公钥
+  id_isa 私钥
+  3.拷贝公钥的内容，并设置到github中
+  ```
+
+  
