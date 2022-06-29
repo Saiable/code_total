@@ -1,7 +1,0 @@
-{#<li><a href="{% url 'web:dashboard' project_id=request.tracer.project.id %}">概述</a></li>#}
-{#<li><a href="{% url 'web:issues' project_id=request.tracer.project.id %}">问题</a></li>#}
-{#<li><a href="{% url 'web:wiki' project_id=request.tracer.project.id %}">wiki</a></li>#}
-
-{% for item in data_list %}
-    <li {% if item.class %} class="{{ item.class }}" {% endif %} > <a href="{{ item.url }}">{{ item.title }}</a></li>
-{% endfor %}

@@ -1,92 +1,41 @@
-关于编程学习方法总结及建议
+# 社会关系
 
-关键词
+## 
 
-笔记、了解基础后，遇到问题解决问题、思维导图（知识结构、宏观认识）
+# 健康与医疗
+
+## 饮食
+
+## 健身
+
+# 心理健康
+
+## 认知
+
+- 知识点是对现实情况，可能发生的结果的一种概率描述，如果自己亲身经历体验过，称之为经验。
+    - 对于经验，人要有意识的组合经验，吸取经验及其中的教训，形成解决未来可能发生的某件事的方案。通过方案是基于无数个经验积累而成的。
+- 以规则的形式现象进行描述，规则越具体，用到的基础概念也就越多，越接近现象的底层逻辑
+    - 如果是以现象解释现象，得到的终究还是现象
+    - 现象的客观描述，是基于多个概念下的规则的描述
 
 
 
+## 诱惑
 
 
-| 计算机网络                                                   | 计算机基础 | 前端                                                         | 后端                                                         | 后端     | 后端       | 数据库      | 数据库                                                       | 数据库                                                       |
-| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ | -------- | ---------- | ----------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [网络基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/network/思科CCNA网络基础入门.md) |            | [Html&Css](https://gitee.com/mindcons/code_total/blob/master/md_doc/html&css基础.md) | [python基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/python基础.md) | [Java]() | [Golang]() | [MongoDB]() | [Postgresql](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql.md) | [Redis](https://gitee.com/mindcons/code_total/blob/master/md_doc/database/redis/redis.md) |
-|                                                              |            | [Css_flex弹性布局](https://gitee.com/mindcons/code_total/blob/master/md_doc/css_弹性布局.md) | [python_socket](https://gitee.com/mindcons/code_total/blob/master/md_doc/python_socket.md) |          |            |             | [Postgresql数据库连接](https://gitee.com/mindcons/code_total/blob/master/md_doc/Postgresql数据库连接.md) | [redis.conf](https://gitee.com/mindcons/code_total/blob/master/md_doc/database/redis/redsi_conf.md) |
-|                                                              |            | [移动端视口理论](https://gitee.com/mindcons/code_total/blob/master/md_doc/移动端视口理论.md) | [python设计模式](https://gitee.com/mindcons/code_total/blob/master/md_doc/python设计模式.md) |          |            |             |                                                              |                                                              |
-|                                                              |            | [媒体查询](https://gitee.com/mindcons/code_total/blob/master/md_doc/媒体查询.md) | [Django3.6](https://gitee.com/mindcons/code_total/blob/master/md_doc/django3.6FAQ.md) |          |            |             |                                                              |                                                              |
-|                                                              |            | [Js]()    [Js高级]()                                         | [Django_轻量级bug管理平台](https://gitee.com/mindcons/code_total/blob/master/md_doc/django/django_bug管理平台.md) |          |            |             |                                                              |                                                              |
-|                                                              |            | [Less](https://gitee.com/mindcons/code_total/blob/master/md_doc/less基础.md) | [request_爬虫基础](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫基础.md) |          |            |             |                                                              |                                                              |
-|                                                              |            | [Bootstrap](https://gitee.com/mindcons/code_total/blob/master/md_doc/Bootstrap.md)     [栅格系统源码](https://gitee.com/mindcons/code_total/tree/master/%E5%89%8D%E7%AB%AF/bootstrap/%E6%A0%85%E6%A0%BC%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81) | [行业网站收集](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫_行业网站收集.md) |          |            |             |                                                              |                                                              |
-|                                                              |            | [H5](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5.md)    [Canvas](https://gitee.com/mindcons/code_total/blob/master/md_doc/h5_02.md) | [xpath指南](https://gitee.com/mindcons/code_total/blob/master/md_doc/爬虫_数据解析.md) |          |            |             |                                                              |                                                              |
-|                                                              |            | [Jquery](https://gitee.com/mindcons/code_total/blob/master/md_doc/Jquery.md) | [RPC]()                                                      |          |            |             |                                                              |                                                              |
-|                                                              |            | [Ajax(jquery)](https://gitee.com/mindcons/code_total/blob/master/md_doc/ajax(jquery).md)     [Ajax(axios)]() | [FastAPI]()                                                  |          |            |             |                                                              |                                                              |
-|                                                              |            | [npm介绍](https://gitee.com/mindcons/code_total/blob/master/md_doc/Node.js_npm介绍.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [ES6~ES11](https://gitee.com/mindcons/code_total/blob/master/md_doc/ES6~ES11.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Js模块化]()                                                 |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Grunt]()    [Gulp]()    [Webpack]()                         |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Promise]()                                                  |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Axios(Vue2)](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_axios.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Mpvue]()                                                    |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [TypeScript]()                                               |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [React]()                                                    |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [vue语法](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_Vue语法.md) <br />[webpack](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_webpack.md)    <br />[vue-cli](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_vue-cli.md)     <br />[vue-router](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_vue-router.md)    <br />[Promise](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_Promise.md)     <br />[vuex](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_vuex.md)     <br />[axios](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue2_axios.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [vue实例（导航栏的封装）](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue实例（导航栏的封装）.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [练手_手机端电商商城](https://gitee.com/mindcons/code_total/blob/master/md_doc/练手_手机端电商商城.md)<br />[练手_外卖]()<br />[练手_招聘]()<br />[练手_音乐]()<br />[练手_公众号开发]()<br />[练手_React&AntD_电商后台]()<br />[练手_Mpvue&Koa_图书]() |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [mvvm](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue_mvvm.md)     <br />[《深入浅出Vue.js》](https://gitee.com/mindcons/code_total/blob/master/md_doc/深入浅出vue.js.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Vue3](https://gitee.com/mindcons/code_total/blob/master/md_doc/vue3.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Mustache]()                                                 |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [Vue源码：v-dom&diff算法]()    <br />[Vue源码：响应式原理]()    <br />[Vue源码：AST]()    <br />[Vue源码：指令和生命周期]() |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [微信小程序](https://gitee.com/mindcons/code_total/blob/master/md_doc/微信小程序.md) |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [前端自定义函数工具库]()                                     |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            | [面试题]()                                                   |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
-|                                                              |            |                                                              |                                                              |          |            |             |                                                              |                                                              |
+
+## 价值观
 
 
 
 
+# 资本
 
-| Linux（运维）                                                | 大数据                                                       |      |      |      |      |      |      |      |      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| [shell脚本]()                                                | [brat安装部署](https://gitee.com/mindcons/code_total/blob/master/md_doc/brat安装步骤.md) |      |      |      |      |      |      |      |      |
-| [linux常用命令](https://gitee.com/mindcons/code_total/blob/master/md_doc/linux常用命令.md) |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
-|                                                              |                                                              |      |      |      |      |      |      |      |      |
+# 学习方法
 
-
-
-
-
-| 其他                                                         |      |      |      |      |      |      |      |      |      |
-| ------------------------------------------------------------ | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| [正则表达式](https://gitee.com/mindcons/code_total/blob/master/md_doc/正则表达式.md) |      |      |      |      |      |      |      |      |      |
-| [Mkdocs](https://gitee.com/mindcons/code_total/blob/master/md_doc/Mkdocs.md) |      |      |      |      |      |      |      |      |      |
-| [各种IDE设置](https://gitee.com/mindcons/code_total/blob/master/md_doc/tools/IDE设置.md) |      |      |      |      |      |      |      |      |      |
-| [Git]()                                                      |      |      |      |      |      |      |      |      |      |
-| [Watchman](https://gitee.com/mindcons/code_total/blob/master/md_doc/Watchman.md) |      |      |      |      |      |      |      |      |      |
-| [数据结构]()                                                 |      |      |      |      |      |      |      |      |      |
-|                                                              |      |      |      |      |      |      |      |      |      |
-|                                                              |      |      |      |      |      |      |      |      |      |
-|                                                              |      |      |      |      |      |      |      |      |      |
-|                                                              |      |      |      |      |      |      |      |      |      |
-|                                                              |      |      |      |      |      |      |      |      |      |
-
-
-
-
-
-
+- 不同学习方法、套路，都有其适用背景、适用领域、学科、阶段
+- 刻意练习、重复练习不失为快速熟悉某个知识点的方法，但仅限于点，在这个点上重复一万遍，认知层次仍然在这个点上
+    - 要有意识的扩展该知识点，认识到这个点是在哪个知识面上，这个知识面是在哪个知识体系上，
+    - 在上述意识基础上的重复练习，不单单是点的重复，而是知识面、知识体系的重复，这样的重复是有意义的。
+    - 体系的重复，在于点的实践，不在于点的理论，是底层实践对上层理论的进一步加深巩固，同时形成基于体系的进一步认知。
 
